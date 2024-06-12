@@ -1,11 +1,11 @@
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
-SELF_EXE = target/release/sgx-notary
+SELF_EXE = target/release/opacity-avs-node
 
 .PHONY: all
-all: $(SELF_EXE) sgx-notary.manifest
+all: $(SELF_EXE) opacity-avs-node.manifest
 ifeq ($(SGX),1)
-all: sgx-notary.manifest.sgx sgx-notary.sig
+all: opacity-avs-node.manifest.sgx opacity-avs-node.sig
 endif
 
 ifeq ($(DEBUG),1)
@@ -26,7 +26,7 @@ RA_TYPE ?= epid
 RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
-sgx-notary.manifest: sgx-notary.manifest.template
+opacity-avs-node.manifest: opacity-avs-node.manifest.template
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
 		-Darch_libdir=$(ARCH_LIBDIR) \
@@ -38,7 +38,7 @@ sgx-notary.manifest: sgx-notary.manifest.template
 
 # Make on Ubuntu <= 20.04 doesn't support "Rules with Grouped Targets" (`&:`),
 # see the helloworld example for details on this workaround.
-sgx-notary.manifest.sgx sgx-notary.sig: sgx_sign
+opacity-avs-node.manifest.sgx opacity-avs-node.sig: sgx_sign
 	@:
 
 .INTERMEDIATE: sgx_sign
@@ -54,8 +54,8 @@ GRAMINE = gramine-sgx
 endif
 
 .PHONY: start-gramine-server
-start-gramine-server: all
-	$(GRAMINE) sgx-notary --config-file
+start-opacity-avs-node: all
+	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
 .PHONY: clean
 clean:

@@ -16,27 +16,41 @@
 # try to dynamically link to a different (non-existing) version in the runner image
 #
 # (5) rust:latest is still using bullseye somehow which only has OpenSSL 1.1.1
-FROM rust:bookworm AS builder
-WORKDIR /usr/src/opacity-server
+FROM gramineproject/gramine:v1.5
+WORKDIR /usr/src/opacity-avs-node
 COPY . .
 RUN cargo install --path .
 
 FROM ubuntu:latest
-WORKDIR /root/.opacity-server 
+WORKDIR /root/.opacity-avs-node
 # Install pkg-config and libssl-dev for async-tungstenite to use (as explained above)
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
   pkg-config \
   libssl-dev \
+  build-essential \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-  
+
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN gramine-sgx-gen-private-key
+# This should be associated with an acive IAS SPID in order for
+# gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
+ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
+ENV RA_CLIENT_LINKABLE=1
+
+RUN make opacity-avs-node.manifest
+RUN make SGX=1
+
+
 # Copy default fixture folder for default usage
-COPY --from=builder /usr/src/opacity-server/fixture ./fixture
+COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
 # Copy default config folder for default usage
-COPY --from=builder /usr/src/opacity-server/config ./config
-COPY --from=builder /usr/local/cargo/bin/opacity-server /usr/local/bin/opacity-server
+COPY --from=builder /usr/src/opacity-avs-node/config ./config
+COPY --from=builder /usr/local/cargo/bin/opacity-avs-node /usr/local/bin/opacity-avs-node
 # Label to link this image with the repository in Github Container Registry (https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package#connecting-a-repository-to-a-container-image-using-the-command-line)
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity server in Rust."
 EXPOSE 7047
-CMD [ "opacity-server" ]
+CMD [ "make", "start-opacity-avs-node"]
