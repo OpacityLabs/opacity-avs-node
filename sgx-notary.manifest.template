@@ -5,6 +5,7 @@ libos.entrypoint = "{{ self_exe }}"
 loader.log_level = "{{ log_level }}"
 
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}"
+loader.insecure__use_cmdline_argv = true
 
 # See https://gramine.readthedocs.io/en/stable/performance.html#glibc-malloc-tuning
 loader.env.MALLOC_ARENA_MAX = "1"
