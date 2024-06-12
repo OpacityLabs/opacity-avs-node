@@ -16,13 +16,10 @@
 # try to dynamically link to a different (non-existing) version in the runner image
 #
 # (5) rust:latest is still using bullseye somehow which only has OpenSSL 1.1.1
-FROM gramineproject/gramine:v1.5
-WORKDIR /usr/src/opacity-avs-node
+FROM gramineproject/gramine:v1.5 as builder
+WORKDIR /opacity-avs-node
 COPY . .
-RUN cargo install --path .
 
-FROM ubuntu:latest
-WORKDIR /root/.opacity-avs-node
 # Install pkg-config and libssl-dev for async-tungstenite to use (as explained above)
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
   pkg-config \
@@ -33,6 +30,9 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup toolchain install 1.78.0
+
+
 
 RUN gramine-sgx-gen-private-key
 # This should be associated with an acive IAS SPID in order for
@@ -45,10 +45,10 @@ RUN make SGX=1
 
 
 # Copy default fixture folder for default usage
-COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
-# Copy default config folder for default usage
-COPY --from=builder /usr/src/opacity-avs-node/config ./config
-COPY --from=builder /usr/local/cargo/bin/opacity-avs-node /usr/local/bin/opacity-avs-node
+# COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
+# # Copy default config folder for default usage
+# COPY --from=builder /usr/src/opacity-avs-node/config ./config
+# COPY --from=builder /usr/local/cargo/bin/opacity-avs-node /usr/local/bin/opacity-avs-node
 # Label to link this image with the repository in Github Container Registry (https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package#connecting-a-repository-to-a-container-image-using-the-command-line)
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity server in Rust."
