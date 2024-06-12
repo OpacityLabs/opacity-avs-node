@@ -31,7 +31,7 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup toolchain install 1.78.0
 RUN gramine-sgx-gen-private-key
-FROM ubuntu:22.04 as builder
+# FROM ubuntu:22.04 as builder
 
 WORKDIR /opacity-avs-node
 COPY . .
