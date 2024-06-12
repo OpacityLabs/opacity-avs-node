@@ -30,12 +30,12 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup toolchain install 1.78.0
-
+RUN gramine-sgx-gen-private-key
 FROM ubuntu:22.04 as builder
 
 WORKDIR /opacity-avs-node
 COPY . .
-RUN gramine-sgx-gen-private-key
+
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
