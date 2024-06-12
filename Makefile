@@ -54,7 +54,7 @@ GRAMINE = gramine-sgx
 endif
 
 .PHONY: start-gramine-server
-start-opacity-avs-node: all
+start-node: all
 	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
 .PHONY: clean

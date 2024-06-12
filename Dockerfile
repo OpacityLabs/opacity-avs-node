@@ -44,7 +44,7 @@ RUN gramine-sgx-gen-private-key
 # ENV RA_CLIENT_LINKABLE=1
 
 RUN make opacity-avs-node.manifest
-# RUN make SGX=1
+RUN make SGX=1
 
 
 # Copy default fixture folder for default usage
