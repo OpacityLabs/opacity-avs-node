@@ -26,7 +26,7 @@ use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
 use ws_stream_tungstenite::WsStream;
 
-use opacity_server::{
+use sgx_notary::{
     read_pem_file, run_server, AuthorizationProperties, LoggingProperties, NotarizationProperties,
     NotarizationSessionRequest, NotarizationSessionResponse, NotaryServerProperties,
     NotarySigningKeyProperties, ServerProperties, TLSProperties,
@@ -170,7 +170,7 @@ async fn test_tcp_prover<S: AsyncWrite + AsyncRead + Send + Unpin + 'static>(
 
     // Build the HTTP request to configure notarization
     let payload = serde_json::to_string(&NotarizationSessionRequest {
-        client_type: opacity_server::ClientType::Tcp,
+        client_type: sgx_notary::ClientType::Tcp,
         max_sent_data: Some(MAX_SENT),
         max_recv_data: Some(MAX_RECV),
     })
@@ -345,7 +345,7 @@ async fn test_websocket_prover() {
 
     // Build the HTTP request to configure notarization
     let payload = serde_json::to_string(&NotarizationSessionRequest {
-        client_type: opacity_server::ClientType::Websocket,
+        client_type: sgx_notary::ClientType::Websocket,
         max_sent_data: Some(MAX_SENT),
         max_recv_data: Some(MAX_RECV),
     })
