@@ -2332,53 +2332,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
-name = "opacity-server"
-version = "0.0.1"
-dependencies = [
- "async-trait",
- "async-tungstenite 0.22.2",
- "axum",
- "axum-core",
- "axum-macros",
- "base64 0.21.7",
- "chrono",
- "csv",
- "eyre",
- "futures",
- "futures-util",
- "http",
- "hyper",
- "hyper-tls",
- "notify",
- "opentelemetry",
- "p256",
- "rstest",
- "rustls",
- "rustls-pemfile",
- "serde",
- "serde_json",
- "serde_yaml",
- "sha1",
- "structopt",
- "thiserror",
- "tls-server-fixture",
- "tlsn-prover",
- "tlsn-tls-core",
- "tlsn-verifier",
- "tokio",
- "tokio-native-tls",
- "tokio-rustls",
- "tokio-util",
- "tower",
- "tower-http",
- "tracing",
- "tracing-opentelemetry",
- "tracing-subscriber",
- "uuid",
- "ws_stream_tungstenite",
-]
-
-[[package]]
 name = "opaque-debug"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3230,6 +3183,53 @@ checksum = "a84f14a19e9a014bb9f4512488d9829a68e04ecabffb0f9904cd1ace94598177"
 dependencies = [
  "base16ct",
  "serde",
+]
+
+[[package]]
+name = "sgx-notary"
+version = "0.0.1"
+dependencies = [
+ "async-trait",
+ "async-tungstenite 0.22.2",
+ "axum",
+ "axum-core",
+ "axum-macros",
+ "base64 0.21.7",
+ "chrono",
+ "csv",
+ "eyre",
+ "futures",
+ "futures-util",
+ "http",
+ "hyper",
+ "hyper-tls",
+ "notify",
+ "opentelemetry",
+ "p256",
+ "rstest",
+ "rustls",
+ "rustls-pemfile",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha1",
+ "structopt",
+ "thiserror",
+ "tls-server-fixture",
+ "tlsn-prover",
+ "tlsn-tls-core",
+ "tlsn-verifier",
+ "tokio",
+ "tokio-native-tls",
+ "tokio-rustls",
+ "tokio-util",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+ "uuid",
+ "ws_stream_tungstenite",
 ]
 
 [[package]]
