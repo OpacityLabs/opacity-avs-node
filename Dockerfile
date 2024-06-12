@@ -44,7 +44,7 @@ ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 ENV RA_CLIENT_LINKABLE=1
 
 RUN make opacity-avs-node.manifest
-RUN make SGX=1
+# RUN make SGX=1
 
 
 # Copy default fixture folder for default usage
