@@ -55,7 +55,7 @@ endif
 
 .PHONY: start-gramine-server
 start-opacity-avs-node: all
-	$(GRAMINE) opacity-avs-node --config-file
+	$(GRAMINE) opacity-avs-node --config-file ./config/config.toml
 
 .PHONY: clean
 clean:
