@@ -16,9 +16,8 @@
 # try to dynamically link to a different (non-existing) version in the runner image
 #
 # (5) rust:latest is still using bullseye somehow which only has OpenSSL 1.1.1
-FROM gramineproject/gramine:v1.5 as builder
-WORKDIR /opacity-avs-node
-COPY . .
+FROM gramineproject/gramine:v1.5 as gramine
+
 
 # Install pkg-config and libssl-dev for async-tungstenite to use (as explained above)
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
@@ -32,8 +31,10 @@ RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup toolchain install 1.78.0
 
+FROM ubuntu:22.04 as builder
 
-
+WORKDIR /opacity-avs-node
+COPY . .
 RUN gramine-sgx-gen-private-key
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify

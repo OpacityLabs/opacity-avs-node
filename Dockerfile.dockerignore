@@ -1,6 +1,6 @@
 # exclude everything
 
 tlsn
-
+target
 # exclude any /target folders inside the included folders above
 # **/target*
