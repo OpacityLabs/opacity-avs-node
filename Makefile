@@ -42,7 +42,7 @@ opacity-avs-node.manifest.sgx opacity-avs-node.sig: sgx_sign
 	@:
 
 .INTERMEDIATE: sgx_sign
-sgx_sign: sgx-revm.manifest $(SELF_EXE)
+sgx_sign: opacity-avs-node.manifest $(SELF_EXE)
 	gramine-sgx-sign \
 		--manifest $< \
 		--output $<.sgx
@@ -55,7 +55,7 @@ endif
 
 .PHONY: start-gramine-server
 start-opacity-avs-node: all
-	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
+	$(GRAMINE) opacity-avs-node --config-file
 
 .PHONY: clean
 clean:
