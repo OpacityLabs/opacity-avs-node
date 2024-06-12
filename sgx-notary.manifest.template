@@ -18,8 +18,8 @@ fs.mounts = [
   { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
 
   # For providing input through trusted or host-provided input files
-  { path = "config", uri = "file:config" },
-  { path = "fixture", uri = "file:fixture" },
+  { path = "/home/azureuser/gramine-sgx-revm/config", uri = "file:config" },
+  { path = "/home/azureuser/gramine-sgx-revm/fixture", uri = "file:fixture" },
 ]
 
 sgx.debug = false
