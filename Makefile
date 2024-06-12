@@ -26,7 +26,7 @@ RA_TYPE ?= epid
 RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
-sgx-revm.manifest: sgx-notary.manifest.template
+sgx-notary.manifest: sgx-notary.manifest.template
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
 		-Darch_libdir=$(ARCH_LIBDIR) \
@@ -55,7 +55,7 @@ endif
 
 .PHONY: start-gramine-server
 start-gramine-server: all
-	$(GRAMINE) sgx-notary --config-file config/config.yaml
+	$(GRAMINE) sgx-notary --config-file
 
 .PHONY: clean
 clean:
