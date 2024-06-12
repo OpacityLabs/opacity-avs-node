@@ -40,8 +40,8 @@ RUN gramine-sgx-gen-private-key
 
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
-ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
-ENV RA_CLIENT_LINKABLE=1
+# ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
+# ENV RA_CLIENT_LINKABLE=1
 
 RUN make opacity-avs-node.manifest
 # RUN make SGX=1
