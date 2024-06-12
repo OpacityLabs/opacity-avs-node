@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opacity-server
+  labels:
+    app: opacity-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: opacity-server
+  ports:
+    - protocol: TCP
+      port: 7047
+      targetPort: 7047
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opacity-server-deployment
+  labels:
+    app: opacity-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: opacity-server
+  template:
+    metadata:
+      labels:
+        app: opacity-server
+    spec:
+      containers:
+      - name: opacity-server-container
+        # The $REPOSITORY_URI and $IMAGE_TAG placeholders will be replaced by actual values supplied by the build action in your workflow
+        image: $REPOSITORY_URI:$IMAGE_TAG
+        ports:
+        - containerPort: 7047

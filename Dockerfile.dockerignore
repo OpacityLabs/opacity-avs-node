@@ -1,0 +1,6 @@
+# exclude everything
+
+tlsn
+
+# exclude any /target folders inside the included folders above
+# **/target*

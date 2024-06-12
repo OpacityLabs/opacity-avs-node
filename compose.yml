@@ -1,0 +1,5 @@
+services:
+  opacity-server:
+    build: .
+    ports:
+      - "7047:7047"

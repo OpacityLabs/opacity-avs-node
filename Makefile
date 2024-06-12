@@ -1,11 +1,11 @@
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
-SELF_EXE = target/release/sgx-revm
+SELF_EXE = target/release/sgx-notary
 
 .PHONY: all
-all: $(SELF_EXE) sgx-revm.manifest
+all: $(SELF_EXE) sgx-notary.manifest
 ifeq ($(SGX),1)
-all: sgx-revm.manifest.sgx sgx-revm.sig
+all: sgx-notary.manifest.sgx sgx-notary.sig
 endif
 
 ifeq ($(DEBUG),1)
@@ -26,7 +26,7 @@ RA_TYPE ?= epid
 RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
-sgx-revm.manifest: sgx-revm.manifest.template
+sgx-revm.manifest: sgx-notary.manifest.template
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
 		-Darch_libdir=$(ARCH_LIBDIR) \
@@ -38,7 +38,7 @@ sgx-revm.manifest: sgx-revm.manifest.template
 
 # Make on Ubuntu <= 20.04 doesn't support "Rules with Grouped Targets" (`&:`),
 # see the helloworld example for details on this workaround.
-sgx-revm.manifest.sgx sgx-revm.sig: sgx_sign
+sgx-notary.manifest.sgx sgx-notary.sig: sgx_sign
 	@:
 
 .INTERMEDIATE: sgx_sign
@@ -55,7 +55,7 @@ endif
 
 .PHONY: start-gramine-server
 start-gramine-server: all
-	$(GRAMINE) sgx-revm
+	$(GRAMINE) sgx-notary --config-file config/config.yaml
 
 .PHONY: clean
 clean:
