@@ -22,9 +22,9 @@ endif
 $(SELF_EXE): Cargo.toml 
 	cargo build --release
 
-# RA_TYPE ?= epid
-# RA_CLIENT_SPID ?= 12345678901234567890123456789012
-# RA_CLIENT_LINKABLE ?= 0
+RA_TYPE ?= epid
+RA_CLIENT_SPID ?= 12345678901234567890123456789012
+RA_CLIENT_LINKABLE ?= 0
 
 opacity-avs-node.manifest: opacity-avs-node.manifest.template
 	gramine-manifest \
