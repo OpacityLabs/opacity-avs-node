@@ -24,8 +24,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
   pkg-config \
   libssl-dev \
   build-essential \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  lld
 
 WORKDIR /opacity-avs-node
 COPY . .
@@ -42,8 +41,7 @@ RUN gramine-sgx-gen-private-key
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 # ENV RA_CLIENT_LINKABLE=1
-
-RUN make opacity-avs-node.manifest
+RUN cargo build --release
 RUN make SGX=1
 
 

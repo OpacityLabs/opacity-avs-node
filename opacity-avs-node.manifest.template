@@ -12,6 +12,9 @@ loader.env.MALLOC_ARENA_MAX = "1"
 
 # For easier debugging — not strictly required to run this workload
 loader.env.RUST_BACKTRACE = "full"
+loader.env.RUST_LOG = "DEBUG"
+loader.env.yamux = "INFO"
+
 
 fs.mounts = [
   { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
@@ -30,6 +33,9 @@ sgx.edmm_enable = {{ 'true' if env.get('EDMM', '0') == '1' else 'false' }}
 #vsgx.remote_attestation = "{{ ra_type }}"
 # sgx.ra_client_spid = "{{ ra_client_spid }}"
 # sgx.ra_client_linkable = {{ 'true' if ra_client_linkable == '1' else 'false' }}
+
+sys.enable_extra_runtime_domain_names_conf = true
+
 
 sgx.trusted_files = [
   "file:{{ gramine.libos }}",
@@ -53,4 +59,4 @@ sgx.allowed_files = [
   "file:fixture/tls/rootCA.srl",
 ]
 
-sgx.max_threads = 8
+sgx.max_threads = 96
