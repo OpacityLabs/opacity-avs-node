@@ -8,13 +8,11 @@ ifeq ($(SGX),1)
 all: opacity-avs-node.manifest.sgx opacity-avs-node.sig
 endif
 
+ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug
-
-# ifeq ($(DEBUG),1)
-# GRAMINE_LOG_LEVEL = debug
-# else
-# GRAMINE_LOG_LEVEL = error
-# endif
+else
+GRAMINE_LOG_LEVEL = error
+endif
 
 # Note that we're compiling in release mode regardless of the DEBUG setting passed
 # to Make, as compiling in debug mode results in an order of magnitude's difference in
