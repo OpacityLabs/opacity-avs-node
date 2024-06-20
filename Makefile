@@ -70,3 +70,4 @@ distclean: clean
 .PHONY: docker-build
 docker-build:
 	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
+	docker push opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
