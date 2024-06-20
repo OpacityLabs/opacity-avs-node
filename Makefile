@@ -68,6 +68,5 @@ distclean: clean
 	$(RM) -rf target/ Cargo.lock
 
 .PHONY: docker-build
-docker-build: docker-build
-	echo $(GIT_HASH)
-	# docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(git --no-pager log -1 --format=%H)
+docker-build:
+	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
