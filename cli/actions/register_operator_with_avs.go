@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -32,10 +33,20 @@ type OpacityConfig struct {
 	ECDSAPrivateKeyStorePath string `yaml:"ecdsa_private_key_store_path"`
 }
 
+func FailIfNoFile(path string) error {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		log.Panicln("File does not exist:", path)
+	}
+	return nil
+}
+
 func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	configPath := ctx.GlobalString(config.ConfigFileFlag.Name)
 	fmt.Println("Config Path:", configPath)
+
+	FailIfNoFile(configPath)
+
 	nodeConfig := OpacityConfig{}
 	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
 	if err != nil {
@@ -53,12 +64,17 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Panicln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
 	}
 
+	FailIfNoFile(nodeConfig.ECDSAPrivateKeyStorePath)
+
 	operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
 		nodeConfig.ECDSAPrivateKeyStorePath,
 		ecdsaKeyPassword,
 	)
 
-	fmt.Println("Operator ECDSA Private Key:", operatorEcdsaPrivKey)
+	if operatorEcdsaPrivKey != nil {
+		log.Panicln("Unable to decrypt operator private key.")
+	}
+
 	fmt.Println(crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey).Hex())
 	if err != nil {
 		return err
@@ -103,7 +119,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Operator Signature:", operatorSignature)
 
 	var signature = contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry{
 		Signature: operatorSignature,
