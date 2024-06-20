@@ -52,8 +52,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Printf("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
 	}
 
-	log.Printf("Operator ECDSA Key", nodeConfig.ecdsa_private_key_store_path)
-
 	operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
 		nodeConfig.ecdsa_private_key_store_path,
 		ecdsaKeyPassword,
