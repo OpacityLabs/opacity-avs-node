@@ -119,3 +119,6 @@ run:
 OR
 `eigenlayer operator register operator.yaml`
 
+You should see:
+<img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
+
