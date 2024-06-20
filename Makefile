@@ -27,6 +27,8 @@ RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
 GIT_HASH=$(shell git rev-parse HEAD)
+ECDSA_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.ecdsa.key.json
+BLS_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.bls.key.json
 
 opacity-avs-node.manifest: opacity-avs-node.manifest.template
 	gramine-manifest \
@@ -78,6 +80,7 @@ install-eigenlayer-cli:
 	@sudo snap install go --channel 1.21/stable --classic
 	@echo "Installing EigenLayer CLI"
 	@go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+	@echo -e "\nexport GOBIN=\$GOPATH/bin\nexport PATH=\$GOBIN:\$PATH" >> $HOME/.bashrc
 
 .PHONY: generate-keys
 generate-keys:
@@ -85,4 +88,16 @@ generate-keys:
 	@eigenlayer operator keys create --key-type ecdsa --insecure opacity
 	@echo "Generating BLS Key"
 	@eigenlayer operator keys create --key-type bls --insecure opacity
+
+.PHONY: register-eigen-operator
+register-eigen-operator:
+	@echo "Registering Operator to EigenLayer"
+	@eigenlayer operator register operator.yaml
+
+
+.PHONY: list-keys
+list-keys:
+	@eigenlayer operator keys list
+
+
 
