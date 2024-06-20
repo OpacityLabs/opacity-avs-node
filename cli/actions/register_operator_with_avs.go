@@ -24,12 +24,12 @@ import (
 
 type OpacityConfig struct {
 	// used to set the logger level (true = info, false = debug)
-	Production                   bool   `yaml:"production"`
-	opacity_avs_address          string `yaml:"opacity_avs_address"`
-	avs_directory_address        string `yaml:"avs_directory_address"`
-	chain_id                     int    `yaml:"chain_id"`
-	eth_rpc_url                  string `yaml:"eth_rpc_url"`
-	ecdsa_private_key_store_path string `yaml:"ecdsa_private_key_store_path"`
+	Production               bool   `yaml:"production"`
+	OpacityAVSAddress        string `yaml:"opacity_avs_address"`
+	AVSDirectoryAddress      string `yaml:"avs_directory_address"`
+	ChainId                  int    `yaml:"chain_id"`
+	EthRpcUrl                string `yaml:"eth_rpc_url"`
+	ECDSAPrivateKeyStorePath string `yaml:"ecdsa_private_key_store_path"`
 }
 
 func RegisterOperatorWithAvs(ctx *cli.Context) error {
@@ -54,7 +54,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 
 	operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
-		nodeConfig.ecdsa_private_key_store_path,
+		nodeConfig.ECDSAPrivateKeyStorePath,
 		ecdsaKeyPassword,
 	)
 
@@ -63,12 +63,12 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	client, err := ethclient.Dial(nodeConfig.eth_rpc_url)
+	client, err := ethclient.Dial(nodeConfig.EthRpcUrl)
 	if err != nil {
 		return err
 	}
-	opacityAddress := common.HexToAddress(nodeConfig.opacity_avs_address)
-	avsDirectoryAddress := common.HexToAddress(nodeConfig.avs_directory_address)
+	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
+	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
 	if err != nil {
@@ -123,7 +123,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.chain_id)))
+	auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
 
 	if err != nil {
 		log.Fatal(err)
