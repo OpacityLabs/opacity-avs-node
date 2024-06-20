@@ -35,9 +35,9 @@ type OpacityConfig struct {
 func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	configPath := ctx.GlobalString(config.ConfigFileFlag.Name)
-	log.Println("Reading config from %s", configPath)
+	fmt.Println("Config Path:", configPath)
 	nodeConfig := OpacityConfig{}
-	err := sdkutils.ReadYamlConfig("config/opacity.config.yaml", &nodeConfig)
+	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	ecdsaKeyPassword, ok := os.LookupEnv("OPERATOR_ECDSA_KEY_PASSWORD")
 	if !ok {
-		log.Printf("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
+		log.Panicln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
 	}
 
 	operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
