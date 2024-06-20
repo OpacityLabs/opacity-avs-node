@@ -35,7 +35,7 @@ type OpacityConfig struct {
 func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	configPath := ctx.GlobalString(config.ConfigFileFlag.Name)
-	log.Printf("Reading config from %s", configPath)
+	log.Println("Reading config from %s", configPath)
 	nodeConfig := OpacityConfig{}
 	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
 	if err != nil {
