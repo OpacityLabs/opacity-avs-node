@@ -94,6 +94,10 @@ register-eigen-operator:
 	@echo "Registering Operator to EigenLayer"
 	@eigenlayer operator register operator.yaml
 
+register-opacity-node: ## 
+	go run cli/main.go --config config/operator.config.yaml register-operator-with-avs
+
+
 
 .PHONY: list-keys
 list-keys:
