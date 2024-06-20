@@ -137,3 +137,10 @@ See: https://docs.docker.com/engine/install
 For Ubuntu 22.04:
 
 `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
+
+
+## Register Node to Opacity AVS
+
+Run:
+
+`OPERATOR_ECDSA_KEY_PASSWORD="" make register-opacity-node`
