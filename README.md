@@ -73,12 +73,14 @@ Run:
 
 Say yes to populating the config
 
-> Enter your operator address: 0xfe8463ca0a9b436fdc5f75709ad5a43961802d68
-> Enter your earnings address (default to your operator address): 0xfe8463ca0a9b436fdc5f75709ad5a43961802d68
-> Enter your ETH rpc url: https://ethereum-holesky.publicnode.com
-> Select your network: holesky
-> Select your signer type: local_keystore
-> Enter your ecdsa key path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json
+```
+Enter your operator address: 0xfe8463ca0a9b436fdc5f75709ad5a43961802d68
+Enter your earnings address (default to your operator address): 0xfe8463ca0a9b436fdc5f75709ad5a43961802d68
+Enter your ETH rpc url: https://ethereum-holesky.publicnode.com
+Select your network: holesky
+Select your signer type: local_keystore
+Enter your ecdsa key path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json
+```
 
 This will generate a operator.yaml file that should look like:
 
