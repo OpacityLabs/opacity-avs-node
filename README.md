@@ -102,7 +102,8 @@ fireblocks:
     aws_region: ""
     timeout: 0
 web3:
-    url: ""```
+    url: ""
+```
 
 Remember to fill out the metadata_url to your forked repo.
 
@@ -115,4 +116,4 @@ run:
 `make register-eigen-operator`
 OR
 `eigenlayer operator register operator.yaml`
-`````
+
