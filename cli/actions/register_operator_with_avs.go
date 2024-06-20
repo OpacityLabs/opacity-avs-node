@@ -37,7 +37,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	configPath := ctx.GlobalString(config.ConfigFileFlag.Name)
 	log.Println("Reading config from %s", configPath)
 	nodeConfig := OpacityConfig{}
-	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
+	err := sdkutils.ReadYamlConfig("config/opacity.config.yaml", &nodeConfig)
 	if err != nil {
 		return err
 	}
