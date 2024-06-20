@@ -25,7 +25,7 @@ Ubuntu 22.04:
 `sudo ./sgx-detect`
 
 You should see:
-<Enter screenshot>
+<img width="527" alt="Screenshot 2024-06-20 at 1 39 41 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/2cdd75c3-c426-4619-a9cc-a9455b715dc0">
 
 If you see any red on the output, please contact @EulerLagrange217 on telegram
 
@@ -51,7 +51,7 @@ To check if you did it right you can run:
 
 `make list-keys`
 
-<insert image>
+<img width="1487" alt="Screenshot 2024-06-20 at 1 40 44 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/5b96937d-fa79-4d68-9a5a-d86785536c4c">
 
 3. Fund ECDSA Wallet with testnet ETH
 
