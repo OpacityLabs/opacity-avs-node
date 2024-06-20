@@ -82,7 +82,7 @@ Say yes to populating the config
 
 This will generate a operator.yaml file that should look like:
 
-````operator:
+```operator:
     address: 0xFE8463CA0A9b436FdC5f75709AD5a43961802d68
     earnings_receiver_address: 0xFE8463CA0A9b436FdC5f75709AD5a43961802d68
     delegation_approver_address: "0x0000000000000000000000000000000000000000"
@@ -115,4 +115,4 @@ run:
 `make register-eigen-operator`
 OR
 `eigenlayer operator register operator.yaml`
-````
+`````
