@@ -13,6 +13,10 @@ We recommend you use Ubuntu 22.04
 
 We DO NOT support AWS Enclaves!
 
+## Clone this repo
+
+`git clone https://github.com/OpacityLabs/opacity-avs-node && cd opacity-avs-node`
+
 ## Check SGX
 
 First we should check you are on a valid SGX machine.
