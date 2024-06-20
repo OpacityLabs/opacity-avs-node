@@ -25,7 +25,9 @@ Head over to https://support.fortanix.com/hc/en-us/articles/4414753648788-SGX-De
 
 Ubuntu 22.04:
 `wget https://download.fortanix.com/sgx-detect/ubuntu22.04/sgx-detect?_gl=1*1j4w6dh*_gcl_au*MTM1MDY4MDQ2NS4xNzE4ODUwMTk1 -O sgx-detect`
+
 `chmod +x sgx-detect`
+
 `sudo ./sgx-detect`
 
 You should see:
@@ -49,6 +51,7 @@ For Ubuntu 22.04:
 OR
 
 `eigenlayer operator keys create --key-type ecdsa opacity`
+
 `eigenlayer operator keys create --key-type bls opacity`
 
 To check if you did it right you can run:
