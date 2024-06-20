@@ -71,3 +71,18 @@ distclean: clean
 docker-build:
 	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
 	docker push opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
+
+.PHONY: install-eigenlayer-cli
+install-eigenlayer-cli:
+	@echo "Installing Go"
+	@sudo snap install go --channel 1.21/stable --classic
+	@echo "Installing EigenLayer CLI"
+	@go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+
+.PHONY: generate-keys
+generate-keys:
+	@echo "Generating ECDSA Key"
+	@eigenlayer operator keys create --key-type ecdsa opacity
+	@echo "Generating BLS Key"
+	@eigenlayer operator keys create --key-type bls opacity
+
