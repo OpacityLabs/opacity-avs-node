@@ -26,6 +26,8 @@ RA_TYPE ?= epid
 RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
+GIT_HASH=$(shell git rev-parse HEAD)
+
 opacity-avs-node.manifest: opacity-avs-node.manifest.template
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
@@ -67,4 +69,5 @@ distclean: clean
 
 .PHONY: docker-build
 docker-build: docker-build
-	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(git --no-pager log -1 --format=%H)
+	echo $GIT_HASH
+	# docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(git --no-pager log -1 --format=%H)
