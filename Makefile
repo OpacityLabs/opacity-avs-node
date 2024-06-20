@@ -82,7 +82,7 @@ install-eigenlayer-cli:
 .PHONY: generate-keys
 generate-keys:
 	@echo "Generating ECDSA Key"
-	@eigenlayer operator keys create --key-type ecdsa opacity
+	@eigenlayer operator keys create --key-type ecdsa --insecure opacity
 	@echo "Generating BLS Key"
-	@eigenlayer operator keys create --key-type bls opacity
+	@eigenlayer operator keys create --key-type bls --insecure opacity
 
