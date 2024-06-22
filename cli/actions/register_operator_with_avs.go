@@ -71,7 +71,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		ecdsaKeyPassword,
 	)
 
-	if operatorEcdsaPrivKey != nil {
+	if operatorEcdsaPrivKey == nil {
 		log.Panicln("Unable to decrypt operator private key.")
 	}
 
