@@ -37,12 +37,12 @@ If you see any red on the output, please contact @EulerLagrange217 on telegram
 
 ## Register Node Operator with EigenLayer
 
-The following is not Opacity specific but for EigenLayer. We will be summarizing the following verboase guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation
+The following is not Opacity specific but for EigenLayer. We will be summarizing the following verbose guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation (see this guide for software requirements)
 
 1. Install EigenLayer-CLI
 
 For Ubuntu 22.04:
-`install-eigenlayer-cli`
+`make install-eigenlayer-cli`
 
 2. Create ECDSA and BLS keys
 
@@ -112,6 +112,8 @@ web3:
 
 Remember to fill out the metadata_url to your forked repo.
 
+Run `eigenlayer operator keys list` and check that the private_key_store_path matches the ECDSA Key location in operator.yaml. In ./config/opacity.config.yaml check that ecdsa_private_key_store_path and bls_private_key_store_path also match the expected values.
+
 Make a backup of your operator.yaml for convenience
 
 5. Register Node Operator
@@ -132,10 +134,12 @@ https://stake-holesky.testnet.fi/
 7. Retstake the stETH:
 
 https://holesky.eigenlayer.xyz/restake/stETH/deposit
+NOTE: the website may direct you to select an operator before depositing (and yours may not be on the list). select an operator at random, they will request 3 signatures (approve, deposit, delegate) sign the first two, and reject the third.
 
 8. Delegate to your operator:
 
 navigate to https://holesky.eigenlayer.xyz/operator/<your operator address>
+and push the delegate button.
 
 ## Install Docker
 
