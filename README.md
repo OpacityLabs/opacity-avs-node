@@ -154,3 +154,6 @@ For Ubuntu 22.04:
 Run:
 
 `OPERATOR_ECDSA_KEY_PASSWORD="" make register-opacity-node`
+
+check https://holesky.eigenlayer.xyz/operator/<your operator address>
+It should show that your operator is securing the opacity AVS
