@@ -64,11 +64,7 @@ To check if you did it right you can run:
 
 We need to load your operator wallet with some holesky eth to submit transactions. See: https://docs.eigenlayer.xyz/eigenlayer/restaking-guides/restaking-user-guide/testnet/obtaining-testnet-eth-and-liquid-staking-tokens-lsts
 
-4. Use some Holesky eth to get holesky stETH:
-
-https://stake-holesky.testnet.fi/
-
-5. Operator config
+4. Operator config
 
 We need to generate some metadata so eigenlayer can show you nicely in their UI.
 
@@ -118,7 +114,7 @@ Remember to fill out the metadata_url to your forked repo.
 
 Make a backup of your operator.yaml for convenience
 
-6. Register Node Operator
+5. Register Node Operator
 
 run:
 
@@ -129,6 +125,17 @@ OR
 You should see:
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
 
+6. Use some Holesky eth to get holesky stETH:
+
+https://stake-holesky.testnet.fi/
+
+7. Retstake the stETH:
+
+https://holesky.eigenlayer.xyz/restake/stETH/deposit
+
+8. Delegate to your operator:
+
+navigate to https://holesky.eigenlayer.xyz/operator/<your operator address>
 
 ## Install Docker
 
@@ -137,7 +144,6 @@ See: https://docs.docker.com/engine/install
 For Ubuntu 22.04:
 
 `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
-
 
 ## Register Node to Opacity AVS
 
