@@ -95,6 +95,21 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
+	// Check if operator registered
+	operatorStatus, err := avsDirectoryContract.AvsOperatorStatus(nil, opacityAddress, operatorAddress)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	fmt.Println("Operator status:", operatorStatus)
+	operator2Status, err := avsDirectoryContract.AvsOperatorStatus(nil, opacityAddress, operator2Address)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	fmt.Println("Operator2 status:", operator2Status)
+	return nil
+
 	saltBytes := make([]byte, 32)
 	var salt [32]byte
 	rand.Read(saltBytes)
