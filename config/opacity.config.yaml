@@ -2,6 +2,7 @@
 production: false
 opacity_avs_address: 0xbfc5d26C6eEb46475eB3960F5373edC5341eE535
 avs_directory_address: 0x055733000064333CaDDbC92763c58BF0192fFeBf
+eigenlayer_delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7
 chain_id: 17000
 eth_rpc_url: https://ethereum-holesky.publicnode.com
 ecdsa_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json

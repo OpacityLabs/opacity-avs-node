@@ -15,6 +15,7 @@ import (
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
+	contractDelegationManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/DelegationManager"
 	contractOpacityServiceManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/OpacityServiceManager"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -25,12 +26,13 @@ import (
 
 type OpacityConfig struct {
 	// used to set the logger level (true = info, false = debug)
-	Production               bool   `yaml:"production"`
-	OpacityAVSAddress        string `yaml:"opacity_avs_address"`
-	AVSDirectoryAddress      string `yaml:"avs_directory_address"`
-	ChainId                  int    `yaml:"chain_id"`
-	EthRpcUrl                string `yaml:"eth_rpc_url"`
-	ECDSAPrivateKeyStorePath string `yaml:"ecdsa_private_key_store_path"`
+	Production                  bool   `yaml:"production"`
+	OpacityAVSAddress           string `yaml:"opacity_avs_address"`
+	AVSDirectoryAddress         string `yaml:"avs_directory_address"`
+	EigenLayerDelegationManager string `yaml:"eigenlayer_delegation_manager"`
+	ChainId                     int    `yaml:"chain_id"`
+	EthRpcUrl                   string `yaml:"eth_rpc_url"`
+	ECDSAPrivateKeyStorePath    string `yaml:"ecdsa_private_key_store_path"`
 }
 
 func FailIfNoFile(path string) error {
@@ -85,9 +87,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
+	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
 	operator2Address := common.HexToAddress("0xFE8463CA0A9b436FdC5f75709AD5a43961802d69")
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
+	delegationManager, err := contractDelegationManager.NewContractDelegationManagerCaller(delegationManagerAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,7 +100,21 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	// Check if operator registered
+	// Check if operator registered to EigenLayer
+	isOperatorRegistered, err := delegationManager.IsOperator(nil, operatorAddress)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	fmt.Println("Operator registered:", isOperatorRegistered)
+	isOperatorRegistered2, err := delegationManager.IsOperator(nil, operator2Address)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	fmt.Println("Operator2 registered:", isOperatorRegistered2)
+
+	// Check if operator registered to avs
 	operatorStatus, err := avsDirectoryContract.AvsOperatorStatus(nil, opacityAddress, operatorAddress)
 	if err != nil {
 		log.Fatal(err)
