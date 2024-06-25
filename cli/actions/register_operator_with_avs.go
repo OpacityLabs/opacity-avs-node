@@ -86,6 +86,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
+	operator2Address := common.HexToAddress("0xFE8463CA0A9b436FdC5f75709AD5a43961802d69")
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
 	if err != nil {
 		log.Fatal(err)
