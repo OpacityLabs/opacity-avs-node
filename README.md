@@ -112,7 +112,7 @@ web3:
 
 Remember to fill out the metadata_url to your forked repo.
 
-Run `eigenlayer operator keys list` and check that the private_key_store_path matches the ECDSA Key location in operator.yaml. In ./config/opacity.config.yaml check that ecdsa_private_key_store_path and bls_private_key_store_path also match the expected values.
+Run `eigenlayer operator keys list` and check that ./config/opacity.config.yaml ecdsa_private_key_store_path and bls_private_key_store_path also match the expected values.
 
 Make a backup of your operator.yaml for convenience
 
@@ -127,16 +127,16 @@ OR
 You should see:
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
 
-6. Use some Holesky eth to get holesky stETH:
+6. (optional) Use some Holesky eth to get holesky stETH:
 
 https://stake-holesky.testnet.fi/
 
-7. Retstake the stETH:
+7. (optional) Retstake the stETH:
 
 https://holesky.eigenlayer.xyz/restake/stETH/deposit
 NOTE: the website may direct you to select an operator before depositing (and yours may not be on the list). select an operator at random, they will request 3 signatures (approve, deposit, delegate) sign the first two, and reject the third.
 
-8. Delegate to your operator:
+8. (optional) Delegate to your operator:
 
 navigate to https://holesky.eigenlayer.xyz/operator/<your operator address>
 and push the delegate button.
