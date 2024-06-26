@@ -39,6 +39,7 @@ tlsn
 keys
 
 fixture/notary/*.key
+fixture/notary/*.pub
 fixture/tls/*.csr
 fixture/tls/*.key
 fixture/tls/*.crt
