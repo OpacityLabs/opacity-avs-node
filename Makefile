@@ -76,7 +76,10 @@ distclean: clean
 .PHONY: docker-build
 docker-build:
 	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
-	docker push opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
+
+.PHONY: docker-buipushld
+docker-push:
+	docker push opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)	
 
 .PHONY: install-eigenlayer-cli
 install-eigenlayer-cli:
