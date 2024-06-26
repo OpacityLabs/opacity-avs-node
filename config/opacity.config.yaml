@@ -7,4 +7,4 @@ chain_id: 17000
 eth_rpc_url: https://ethereum-holesky.publicnode.com
 ecdsa_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json
 bls_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json
-bls_private_key_store_path: ./operator.yaml
+operator_config: ./operator.yaml
