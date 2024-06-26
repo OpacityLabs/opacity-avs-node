@@ -11,12 +11,14 @@ import (
 	"os"
 	"time"
 
+	chainioutils "github.com/Layr-Labs/eigensdk-go/chainio/utils"
+	contractRegistryCoordinator "github.com/Layr-Labs/eigensdk-go/contracts/bindings/RegistryCoordinator"
+	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
+	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
 	contractDelegationManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/DelegationManager"
-	contractOpacityServiceManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/OpacityServiceManager"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -37,6 +39,7 @@ var (
 var (
 	ErrInvalidNumberOfArgs   = errors.New("invalid number of arguments")
 	ErrNoECDSAKeyPassword    = errors.New("ecdsa key password env var not set")
+	ErrNoBLSKeyPassword      = errors.New("bls key password env var not set")
 	ErrInvalidYamlFile       = errors.New("invalid yaml file")
 	ErrInvalidMetadata       = errors.New("invalid metadata")
 	ErrOperatorNotRegistered = errors.New("operator not registered to eigenlayer, please register operator to eigenlayer first")
@@ -46,12 +49,15 @@ type OpacityConfig struct {
 	// used to set the logger level (true = info, false = debug)
 	Production                  bool   `yaml:"production"`
 	OpacityAVSAddress           string `yaml:"opacity_avs_address"`
+	RegistryCoordinatorAddress  string `yaml:"registry_coordinator_address"`
 	AVSDirectoryAddress         string `yaml:"avs_directory_address"`
 	EigenLayerDelegationManager string `yaml:"eigenlayer_delegation_manager"`
 	ChainId                     int    `yaml:"chain_id"`
 	EthRpcUrl                   string `yaml:"eth_rpc_url"`
 	ECDSAPrivateKeyStorePath    string `yaml:"ecdsa_private_key_store_path"`
+	BLSPrivateKeyStorePath      string `yaml:"bls_private_key_store_path"`
 	OperatorConfig              string `yaml:"operator_config"`
+	NodePublicIP                string `yaml:"node_public_ip"`
 }
 
 func FailIfNoFile(path string) error {
@@ -97,11 +103,30 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	)
 
 	if operatorEcdsaPrivKey == nil {
-		log.Panicln("Unable to decrypt operator private key.")
+		log.Panicln("Unable to decrypt operator ecdsa private key.")
+		return errors.New("Unable to decrypt operator ecdsa private key.")
 	}
 	if err != nil {
+		log.Fatalln("Unable to decrypt operator ecdsa private key.")
 		return err
 	}
+
+	blsKeyPassword, ok := os.LookupEnv("OPERATOR_BLS_KEY_PASSWORD")
+	if !ok {
+		log.Fatalln("OPERATOR_BLS_KEY_PASSWORD env var not set. using empty string")
+		return ErrNoBLSKeyPassword
+	}
+	blsKeyPair, err := bls.ReadPrivateKeyFromFile(nodeConfig.BLSPrivateKeyStorePath, blsKeyPassword)
+
+	if blsKeyPair == nil {
+		log.Panicln("Unable to decrypt operator private key.")
+		return errors.New("Unable to decrypt operator bls private key.")
+	}
+	if err != nil {
+		log.Fatalln("Unable to decrypt operator bls private key.")
+		return err
+	}
+
 	client, err := ethclient.Dial(nodeConfig.EthRpcUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -109,6 +134,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 
 	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
+	registryCoordinatorAddress := common.HexToAddress(nodeConfig.RegistryCoordinatorAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
@@ -122,7 +148,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 		return err
 	}
-	opacityServiceManagerContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
+	registryCoordinatorContract, err := contractRegistryCoordinator.NewContractRegistryCoordinator(registryCoordinatorAddress, client)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -178,13 +204,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			return err
 		}
 
-		var signature = contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry{
+		var operatorSignatureWithSaltAndExpiry = contractRegistryCoordinator.ISignatureUtilsSignatureWithSaltAndExpiry{
 			Signature: operatorSignature,
 			Salt:      salt,
 			Expiry:    expiryBigInt,
 		}
-
-		fmt.Println("Signature:", signature)
 
 		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
 		if err != nil {
@@ -211,7 +235,33 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		auth.GasLimit = uint64(300000) // in units
 		auth.GasPrice = gasPrice
 
-		res, err := opacityServiceManagerContract.RegisterOperatorToAVS(auth, operatorAddress, signature)
+		g1HashedMsgToSign, err := registryCoordinatorContract.PubkeyRegistrationMessageHash(nil, operatorAddress)
+		if err != nil {
+			log.Fatalln(err)
+			return err
+		}
+
+		signedMsg := chainioutils.ConvertToBN254G1Point(
+			blsKeyPair.SignHashedToCurveMessage(chainioutils.ConvertBn254GethToGnark(g1HashedMsgToSign)).G1Point,
+		)
+
+		G1pubkeyBN254 := chainioutils.ConvertToBN254G1Point(blsKeyPair.GetPubKeyG1())
+		G2pubkeyBN254 := chainioutils.ConvertToBN254G2Point(blsKeyPair.GetPubKeyG2())
+		pubkeyRegParams := contractRegistryCoordinator.IBLSApkRegistryPubkeyRegistrationParams{
+			PubkeyRegistrationSignature: signedMsg,
+			PubkeyG1:                    G1pubkeyBN254,
+			PubkeyG2:                    G2pubkeyBN254,
+		}
+
+		quorumNumbers := sdktypes.QuorumNums{0}
+
+		res, err := registryCoordinatorContract.RegisterOperator(
+			auth,
+			quorumNumbers.UnderlyingType(),
+			nodeConfig.NodePublicIP,
+			pubkeyRegParams,
+			operatorSignatureWithSaltAndExpiry,
+		)
 		if err != nil {
 			fmt.Println(err)
 			return err
