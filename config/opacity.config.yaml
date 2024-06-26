@@ -1,11 +1,11 @@
 # this sets the logger level (true = info, false = debug)
 production: false
-registry_coordinator_address: 0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-opacity_avs_address: 0xbfc5d26C6eEb46475eB3960F5373edC5341eE535
+registry_coordinator_address: 0x4951A1C579039EbfCBA0BE33D2cd3A6D30b0f802
+opacity_avs_address: 0xAD2935E147b61175D5dc3A9e7bDa93B0975A43BA
 avs_directory_address: 0x055733000064333CaDDbC92763c58BF0192fFeBf
 eigenlayer_delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7
 chain_id: 17000
-eth_rpc_url: https://ethereum-holesky.publicnode.com
+eth_rpc_url: https://f67d-163-182-149-126.ngrok-free.app
 ecdsa_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json
 bls_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json
 operator_config: ./operator.yaml
