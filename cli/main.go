@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/OpacityLabs/opacity-avs-node/cli/actions"
@@ -33,6 +32,6 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		log.Fatal(err)
+		os.Exit(1)
 	}
 }
