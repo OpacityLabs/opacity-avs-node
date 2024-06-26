@@ -85,14 +85,14 @@ install-eigenlayer-cli:
 .PHONY: generate-keys
 generate-keys:
 	@echo "Generating ECDSA Key"
-	@eigenlayer operator keys create --key-type ecdsa --insecure opacity
+	@bin/eigenlayer operator keys create --key-type ecdsa --insecure opacity
 	@echo "Generating BLS Key"
-	@eigenlayer operator keys create --key-type bls --insecure opacity
+	@bin/eigenlayer operator keys create --key-type bls --insecure opacity
 
 .PHONY: register-eigen-operator
 register-eigen-operator:
 	@echo "Registering Operator to EigenLayer"
-	@eigenlayer operator register operator.yaml
+	@bin/eigenlayer operator register operator.yaml
 
 register-opacity-node: ## 
 	go run cli/main.go --config config/opacity.config.yaml register-operator-with-avs
@@ -101,7 +101,7 @@ register-opacity-node: ##
 
 .PHONY: list-keys
 list-keys:
-	@eigenlayer operator keys list
+	@bin/eigenlayer operator keys list
 
 
 
