@@ -43,8 +43,8 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Install Go
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
-RUN tar -xvf go1.21.0.linux-amd64.tar.gz
-RUN mv go /usr/local
+RUN tar -xvf go1.21.0.linux-amd64.tar.gz -C /user/local
+# RUN mv go /usr/local
 RUN export GOROOT=/usr/local/go
 RUN export GOPATH=$HOME/go
 RUN export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
