@@ -44,7 +44,7 @@ RUN gramine-sgx-gen-private-key
 # ENV RA_CLIENT_LINKABLE=1
 RUN cargo build --release
 RUN make SGX=1
-
+RUN cargo clean
 
 
 # Copy default fixture folder for default usage
