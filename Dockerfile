@@ -34,8 +34,8 @@ RUN rm ./bin/avs-cli
 RUN rm ./bin/eigenlayer
 
 
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+# ENV PATH="/root/.cargo/bin:${PATH}"
 # RUN rustup toolchain install 1.78.0
 # RUN gramine-sgx-gen-private-key
 # FROM ubuntu:22.04 as builder
@@ -43,7 +43,7 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Install Go
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
-RUN tar -xvf go1.21.0.linux-amd64.tar.gz -C /user/local
+RUN tar -xvf go1.21.0.linux-amd64.tar.gz -C /usr/local
 # RUN mv go /usr/local
 RUN export GOROOT=/usr/local/go
 RUN export GOPATH=$HOME/go
