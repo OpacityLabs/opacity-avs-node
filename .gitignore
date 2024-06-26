@@ -34,6 +34,8 @@ Cargo.lock
 # metrics
 *.csv
 
+#generated operator file
+operator.yaml
 
 tlsn
 keys

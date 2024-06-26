@@ -37,12 +37,12 @@ If you see any red on the output, please contact @EulerLagrange217 on telegram
 
 ## Register Node Operator with EigenLayer
 
-The following is not Opacity specific but for EigenLayer. We will be summarizing the following verboase guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation
+The following is not Opacity specific but for EigenLayer. We will be summarizing the following verbose guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation (see this guide for software requirements)
 
 1. Install EigenLayer-CLI
 
 For Ubuntu 22.04:
-`install-eigenlayer-cli`
+`make install-eigenlayer-cli`
 
 2. Create ECDSA and BLS keys
 
@@ -64,11 +64,7 @@ To check if you did it right you can run:
 
 We need to load your operator wallet with some holesky eth to submit transactions. See: https://docs.eigenlayer.xyz/eigenlayer/restaking-guides/restaking-user-guide/testnet/obtaining-testnet-eth-and-liquid-staking-tokens-lsts
 
-4. Use some Holesky eth to get holesky stETH:
-
-https://stake-holesky.testnet.fi/
-
-5. Operator config
+4. Operator config
 
 We need to generate some metadata so eigenlayer can show you nicely in their UI.
 
@@ -116,9 +112,11 @@ web3:
 
 Remember to fill out the metadata_url to your forked repo.
 
+Run `eigenlayer operator keys list` and check that ./config/opacity.config.yaml ecdsa_private_key_store_path and bls_private_key_store_path also match the expected values.
+
 Make a backup of your operator.yaml for convenience
 
-6. Register Node Operator
+5. Register Node Operator
 
 run:
 
@@ -129,6 +127,19 @@ OR
 You should see:
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
 
+6. (optional) Use some Holesky eth to get holesky stETH:
+
+https://stake-holesky.testnet.fi/
+
+7. (optional) Retstake the stETH:
+
+https://holesky.eigenlayer.xyz/restake/stETH/deposit
+NOTE: the website may direct you to select an operator before depositing (and yours may not be on the list). select an operator at random, they will request 3 signatures (approve, deposit, delegate) sign the first two, and reject the third.
+
+8. (optional) Delegate to your operator:
+
+navigate to https://holesky.eigenlayer.xyz/operator/<your operator address>
+and push the delegate button.
 
 ## Install Docker
 
@@ -138,9 +149,11 @@ For Ubuntu 22.04:
 
 `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
 
-
 ## Register Node to Opacity AVS
 
 Run:
 
 `OPERATOR_ECDSA_KEY_PASSWORD="" make register-opacity-node`
+
+check https://holesky.eigenlayer.xyz/operator/<your operator address>
+It should show that your operator is securing the opacity AVS
