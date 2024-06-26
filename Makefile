@@ -116,3 +116,17 @@ generate-notary-keys:
 	@mkdir -p fixture/notary
 	@echo "Generating Notary Keys"
 	@./generate_notary_keys.sh
+
+
+.PHONY: start-container
+start-container:
+	@docker run -it --device /dev/sgx_enclave \
+  		-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
+  		-v ./data:/workdir/data  \
+  		--volume /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json:/opacity-avs-node/opacity.ecdsa.key.json \
+  		--volume /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json:/opacity-avs-node/opacity.bls.key.json \
+		-e OPERATOR_ECDSA_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
+		-e OPERATOR_BLS_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
+  		opacitylabseulerlagrange/opacity-avs-node:244be9972eeb1b5d3e7ab8301d19275879f4f4e1
+
+

@@ -34,17 +34,16 @@ RUN rm ./bin/avs-cli
 RUN rm ./bin/eigenlayer
 
 
-# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-# ENV PATH="/root/.cargo/bin:${PATH}"
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 # RUN rustup toolchain install 1.78.0
-# RUN gramine-sgx-gen-private-key
+RUN gramine-sgx-gen-private-key
 # FROM ubuntu:22.04 as builder
 
 
 # Install Go
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
 RUN tar -xvf go1.21.0.linux-amd64.tar.gz -C /usr/local
-# RUN mv go /usr/local
 ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
@@ -55,9 +54,9 @@ RUN go build -o ./bin/avs-cli cli/main.go
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 # ENV RA_CLIENT_LINKABLE=1
-# RUN cargo build --release
-# RUN make SGX=1
-# RUN cargo clean
+RUN cargo build --release
+RUN make SGX=1
+RUN cargo clean
 
 
 # Copy default fixture folder for default usage
