@@ -12,9 +12,11 @@ import (
 	"time"
 
 	"github.com/Layr-Labs/eigenlayer-cli/pkg/types"
+	cli_utils "github.com/Layr-Labs/eigenlayer-cli/pkg/utils"
+	"github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
+	eigensdkTypes "github.com/Layr-Labs/eigensdk-go/types"
 	"github.com/Layr-Labs/eigensdk-go/utils"
-
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
@@ -35,6 +37,12 @@ var (
 		Usage:    "Load configuration from `FILE`",
 	}
 	/* Optional Flags */
+)
+
+var (
+	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
+	ErrInvalidYamlFile     = errors.New("invalid yaml file")
+	ErrInvalidMetadata     = errors.New("invalid metadata")
 )
 
 type OpacityConfig struct {
@@ -118,7 +126,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 
 	FailIfNoFile(nodeConfig.OperatorConfig)
-	operatorConfig, err := readConfigFile(nodeConfig.OperatorConfig, nodeConfig.AVSDirectoryAddress)
+	operatorConfig, err := validateAndReturnConfig(nodeConfig.OperatorConfig, nodeConfig.AVSDirectoryAddress)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -243,4 +251,80 @@ func readConfigFile(path string, avsDirectoryAddress string) (*types.OperatorCon
 
 	operatorCfg.ELAVSDirectoryAddress = avsDirectoryAddress
 	return &operatorCfg, nil
+}
+
+func validateAndReturnConfig(configurationFilePath string, avsDirectoryAddress string) (*types.OperatorConfig, error) {
+	operatorCfg, err := readConfigFile(configurationFilePath, avsDirectoryAddress)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf(
+		"%s Operator configuration file read successfully %s\n",
+		cli_utils.EmojiCheckMark,
+		operatorCfg.Operator.Address,
+	)
+	fmt.Printf("%s validating operator config: %s", cli_utils.EmojiWait, operatorCfg.Operator.Address)
+
+	err = operatorCfg.Operator.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("\r%w: with error %s", ErrInvalidYamlFile, err.Error())
+	}
+
+	err = validateMetadata(operatorCfg)
+	if err != nil {
+		return nil, err
+	}
+
+	if operatorCfg.ELDelegationManagerAddress == "" {
+		return nil, fmt.Errorf("\n%w: ELDelegationManagerAddress is not set", ErrInvalidYamlFile)
+	}
+
+	ethClient, err := eth.NewClient(operatorCfg.EthRPCUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := ethClient.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	if id.Cmp(&operatorCfg.ChainId) != 0 {
+		return nil, fmt.Errorf(
+			"\r%s %w: chain ID in config file %d does not match the chain ID of the network %d",
+			cli_utils.EmojiCrossMark,
+			ErrInvalidYamlFile,
+			&operatorCfg.ChainId,
+			id,
+		)
+	}
+
+	return operatorCfg, nil
+}
+
+func validateMetadata(operatorCfg *types.OperatorConfig) error {
+	// Raw GitHub URL validation is only for mainnet
+	if operatorCfg.ChainId.Cmp(big.NewInt(cli_utils.MainnetChainId)) == 0 {
+		err := sdkutils.ValidateRawGithubUrl(operatorCfg.Operator.MetadataUrl)
+		if err != nil {
+			return fmt.Errorf("%w: with error %s", ErrInvalidMetadata, err.Error())
+		}
+
+		metadataBytes, err := sdkutils.ReadPublicURL(operatorCfg.Operator.MetadataUrl)
+		if err != nil {
+			return err
+		}
+
+		var metadata *eigensdkTypes.OperatorMetadata
+		err = json.Unmarshal(metadataBytes, &metadata)
+		if err != nil {
+			return fmt.Errorf("%w: unable to parse metadata with error %s", ErrInvalidMetadata, err.Error())
+		}
+
+		err = sdkutils.ValidateRawGithubUrl(metadata.Logo)
+		if err != nil {
+			return fmt.Errorf("%w: logo url should be valid github raw url, error %s", ErrInvalidMetadata, err.Error())
+		}
+	}
+	return nil
 }
