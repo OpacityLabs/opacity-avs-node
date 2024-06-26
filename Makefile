@@ -62,7 +62,6 @@ endif
 start-node: 
 	@set -e
 	@make register-opacity-node
-	@mkdir -p fixture/notary
 	@make generate-notary-keys
 	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
@@ -111,5 +110,6 @@ list-keys:
 
 .PHONY: generate-notary-keys
 generate-notary-keys:
+	@mkdir -p fixture/notary
 	@echo "Generating Notary Keys"
 	@./generate_notary_keys.sh
