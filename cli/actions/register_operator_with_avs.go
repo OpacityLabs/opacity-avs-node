@@ -11,12 +11,10 @@ import (
 	"os"
 	"time"
 
-	// elContracts "github.com/Layr-Labs/eigensdk-go/chainio/clients/elcontracts"
-	// "github.com/Layr-Labs/eigensdk-go/chainio/txmgr"
-
 	"github.com/Layr-Labs/eigenlayer-cli/pkg/types"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
 	"github.com/Layr-Labs/eigensdk-go/utils"
+
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"

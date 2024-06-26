@@ -28,8 +28,6 @@ require (
 	github.com/aws/smithy-go v1.20.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/lmittmann/tint v1.0.4 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/urfave/cli/v2 v2.27.2 // indirect
 )
 
 require (
