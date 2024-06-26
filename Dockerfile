@@ -23,6 +23,7 @@ FROM gramineproject/gramine:v1.5 as gramine
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
   pkg-config \
   libssl-dev \
+  openssl \
   build-essential \
   lld
 
@@ -45,6 +46,7 @@ RUN cargo build --release
 RUN make SGX=1
 
 
+
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
 # # Copy default config folder for default usage
@@ -54,4 +56,4 @@ RUN make SGX=1
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity server in Rust."
 EXPOSE 7047
-CMD [ "make", "start-opacity-avs-node"]
+CMD [ "make", "start-node"]

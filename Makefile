@@ -30,6 +30,7 @@ GIT_HASH=$(shell git rev-parse HEAD)
 ECDSA_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.ecdsa.key.json
 BLS_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.bls.key.json
 
+
 opacity-avs-node.manifest: opacity-avs-node.manifest.template
 	gramine-manifest \
 		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
@@ -57,8 +58,11 @@ else
 GRAMINE = gramine-sgx
 endif
 
-.PHONY: start-gramine-server
-start-node: all
+.PHONY: start-node
+start-node: 
+	@set -e
+	@make register-opacity-node
+	@make generate-notary-keys
 	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
 .PHONY: clean
@@ -82,8 +86,8 @@ install-eigenlayer-cli:
 	@go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
 	@echo -e "\nexport GOBIN=\$GOPATH/bin\nexport PATH=\$GOBIN:\$PATH" >> $HOME/.bashrc
 
-.PHONY: generate-keys
-generate-keys:
+.PHONY: generate-operator-keys
+generate-operator-keys:
 	@echo "Generating ECDSA Key"
 	@bin/eigenlayer operator keys create --key-type ecdsa --insecure opacity
 	@echo "Generating BLS Key"
@@ -94,7 +98,7 @@ register-eigen-operator:
 	@echo "Registering Operator to EigenLayer"
 	@bin/eigenlayer operator register operator.yaml
 
-register-opacity-node: ## 
+register-opacity-node:
 	@bin/avs-cli --config config/opacity.config.yaml register-operator-with-avs
 
 
@@ -102,3 +106,9 @@ register-opacity-node: ##
 .PHONY: list-keys
 list-keys:
 	@bin/eigenlayer operator keys list
+
+
+.PHONY: generate-notary-keys
+generate-notary-keys:
+	@echo "Generating Notary Keys"
+	@./generate_notary_keys.sh
