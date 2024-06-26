@@ -102,6 +102,3 @@ register-opacity-node: ##
 .PHONY: list-keys
 list-keys:
 	@bin/eigenlayer operator keys list
-
-
-

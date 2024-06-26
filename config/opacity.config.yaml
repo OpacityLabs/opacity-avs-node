@@ -5,7 +5,7 @@ opacity_avs_address: 0xAD2935E147b61175D5dc3A9e7bDa93B0975A43BA
 avs_directory_address: 0x055733000064333CaDDbC92763c58BF0192fFeBf
 eigenlayer_delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7
 chain_id: 17000
-eth_rpc_url: https://63bf-163-182-149-126.ngrok-free.app
+eth_rpc_url: https://ethereum-holesky.publicnode.com
 ecdsa_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json
 bls_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json
 operator_config: ./operator.yaml
