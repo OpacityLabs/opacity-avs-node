@@ -4,15 +4,24 @@ import (
 	"log"
 	"os"
 
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
 	"github.com/OpacityLabs/opacity-avs-node/cli/actions"
 	"github.com/urfave/cli"
+)
+
+var (
+	/* Required Flags */
+	ConfigFileFlag = cli.StringFlag{
+		Name:     "config",
+		Required: true,
+		Usage:    "Load configuration from `FILE`",
+	}
+	/* Optional Flags */
 )
 
 func main() {
 	app := cli.NewApp()
 
-	app.Flags = []cli.Flag{config.ConfigFileFlag}
+	app.Flags = []cli.Flag{ConfigFileFlag}
 	app.Commands = []cli.Command{
 		{
 			Name:    "register-operator-with-avs",

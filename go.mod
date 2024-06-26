@@ -6,7 +6,6 @@ toolchain go1.21.0
 
 require (
 	github.com/Layr-Labs/eigensdk-go v0.1.7
-	github.com/Layr-Labs/incredible-squaring-avs v0.0.0-20240425180836-2a09fe9835aa
 	github.com/ethereum/go-ethereum v1.14.3
 	github.com/urfave/cli v1.22.14
 )
