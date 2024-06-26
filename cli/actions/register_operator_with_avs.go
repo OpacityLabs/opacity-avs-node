@@ -137,6 +137,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		return err
 	}
 	if isOperatorRegistered {
+		log.Fatalln(ErrOperatorNotRegistered)
 		return ErrOperatorNotRegistered
 
 	} else {

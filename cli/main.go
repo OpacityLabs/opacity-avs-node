@@ -32,6 +32,6 @@ func main() {
 
 	err := app.Run(os.Args)
 	if err != nil {
-		os.Exit(0)
+		os.Exit(1)
 	}
 }
