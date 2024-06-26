@@ -123,6 +123,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 		return err
 	}
+	fmt.Println("Operator Config:", operatorConfig)
 
 	// Check if operator registered to EigenLayer
 	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
