@@ -131,7 +131,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("Operator Config:", operatorConfig)
 
 	// Check if operator registered to EigenLayer
 	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
@@ -151,6 +150,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			StakerOptOutWindowBlocks: operatorConfig.Operator.StakerOptOutWindowBlocks,
 			DelegationApprover:       common.HexToAddress(operatorConfig.Operator.DelegationApproverAddress),
 		}
+		fmt.Println("Registering operator with details", opDetails)
 		res, err := delegationManagerContract.RegisterAsOperator(nil, opDetails, operatorConfig.Operator.MetadataUrl)
 		if err != nil {
 			log.Fatal(err)
