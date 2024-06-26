@@ -11,12 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Layr-Labs/eigenlayer-cli/pkg/types"
-	cli_utils "github.com/Layr-Labs/eigenlayer-cli/pkg/utils"
-	"github.com/Layr-Labs/eigensdk-go/chainio/clients/eth"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
-	eigensdkTypes "github.com/Layr-Labs/eigensdk-go/types"
-	"github.com/Layr-Labs/eigensdk-go/utils"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
@@ -40,9 +35,10 @@ var (
 )
 
 var (
-	ErrInvalidNumberOfArgs = errors.New("invalid number of arguments")
-	ErrInvalidYamlFile     = errors.New("invalid yaml file")
-	ErrInvalidMetadata     = errors.New("invalid metadata")
+	ErrInvalidNumberOfArgs   = errors.New("invalid number of arguments")
+	ErrInvalidYamlFile       = errors.New("invalid yaml file")
+	ErrInvalidMetadata       = errors.New("invalid metadata")
+	ErrOperatorNotRegistered = errors.New("operator not registered to eigenlayer, please register operator to eigenlayer first")
 )
 
 type OpacityConfig struct {
@@ -116,6 +112,9 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
+	if err != nil {
+		log.Fatal(err)
+	}
 	delegationManagerContract, err := contractDelegationManager.NewContractDelegationManager(delegationManagerAddress, client)
 	if err != nil {
 		log.Fatal(err)
@@ -125,63 +124,17 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	FailIfNoFile(nodeConfig.OperatorConfig)
-	operatorConfig, err := validateAndReturnConfig(nodeConfig.OperatorConfig, nodeConfig.AVSDirectoryAddress)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-
 	// Check if operator registered to EigenLayer
 	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	if !isOperatorRegistered {
-		// Register operator to EigenLayer
-		fmt.Println("Operator not registered to EigenLayer, registering...")
-		if len(operatorConfig.Operator.MetadataUrl) == 0 {
-			log.Panicln("Metadata URL not set in operator config file. Exiting...")
-		}
+	if isOperatorRegistered {
+		return ErrOperatorNotRegistered
 
-		opDetails := contractDelegationManager.IDelegationManagerOperatorDetails{
-			EarningsReceiver:         common.HexToAddress(operatorConfig.Operator.EarningsReceiverAddress),
-			StakerOptOutWindowBlocks: operatorConfig.Operator.StakerOptOutWindowBlocks,
-			DelegationApprover:       common.HexToAddress(operatorConfig.Operator.DelegationApproverAddress),
-		}
-
-		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		gasPrice, err := client.SuggestGasPrice(context.Background())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
-
-		if err != nil {
-			log.Fatal(err)
-
-		}
-
-		auth.Nonce = big.NewInt(int64(nonce))
-		auth.Value = big.NewInt(0)     // in wei
-		auth.GasLimit = uint64(300000) // in units
-		auth.GasPrice = gasPrice
-
-		res, err := delegationManagerContract.RegisterAsOperator(auth, opDetails, operatorConfig.Operator.MetadataUrl)
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-		fmt.Println("Register Operator to EigenLayer TX:", res.Hash().Hex())
-		time.Sleep(5 * time.Second)
 	} else {
-		fmt.Println("Operator already registered to EigenLayer")
+		fmt.Println("Operator is registered to EigenLayer")
 	}
 
 	// Check if operator registered to AVS
@@ -258,95 +211,8 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		return nil
 
 	} else {
-		fmt.Println("Operator already registered to AVS")
+		fmt.Println("Operator is registered to AVS")
 		return nil
 	}
 
-}
-
-func readConfigFile(path string, avsDirectoryAddress string) (*types.OperatorConfig, error) {
-	var operatorCfg types.OperatorConfig
-	err := utils.ReadYamlConfig(path, &operatorCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	operatorCfg.ELAVSDirectoryAddress = avsDirectoryAddress
-	return &operatorCfg, nil
-}
-
-func validateAndReturnConfig(configurationFilePath string, avsDirectoryAddress string) (*types.OperatorConfig, error) {
-	operatorCfg, err := readConfigFile(configurationFilePath, avsDirectoryAddress)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Printf(
-		"%s Operator configuration file read successfully %s\n",
-		cli_utils.EmojiCheckMark,
-		operatorCfg.Operator.Address,
-	)
-	fmt.Printf("%s validating operator config: %s", cli_utils.EmojiWait, operatorCfg.Operator.Address)
-
-	err = operatorCfg.Operator.Validate()
-	if err != nil {
-		return nil, fmt.Errorf("\r%w: with error %s", ErrInvalidYamlFile, err.Error())
-	}
-
-	err = validateMetadata(operatorCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	if operatorCfg.ELDelegationManagerAddress == "" {
-		return nil, fmt.Errorf("\n%w: ELDelegationManagerAddress is not set", ErrInvalidYamlFile)
-	}
-
-	ethClient, err := eth.NewClient(operatorCfg.EthRPCUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := ethClient.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	if id.Cmp(&operatorCfg.ChainId) != 0 {
-		return nil, fmt.Errorf(
-			"\r%s %w: chain ID in config file %d does not match the chain ID of the network %d",
-			cli_utils.EmojiCrossMark,
-			ErrInvalidYamlFile,
-			&operatorCfg.ChainId,
-			id,
-		)
-	}
-
-	return operatorCfg, nil
-}
-
-func validateMetadata(operatorCfg *types.OperatorConfig) error {
-	// Raw GitHub URL validation is only for mainnet
-	if operatorCfg.ChainId.Cmp(big.NewInt(cli_utils.MainnetChainId)) == 0 {
-		err := sdkutils.ValidateRawGithubUrl(operatorCfg.Operator.MetadataUrl)
-		if err != nil {
-			return fmt.Errorf("%w: with error %s", ErrInvalidMetadata, err.Error())
-		}
-
-		metadataBytes, err := sdkutils.ReadPublicURL(operatorCfg.Operator.MetadataUrl)
-		if err != nil {
-			return err
-		}
-
-		var metadata *eigensdkTypes.OperatorMetadata
-		err = json.Unmarshal(metadataBytes, &metadata)
-		if err != nil {
-			return fmt.Errorf("%w: unable to parse metadata with error %s", ErrInvalidMetadata, err.Error())
-		}
-
-		err = sdkutils.ValidateRawGithubUrl(metadata.Logo)
-		if err != nil {
-			return fmt.Errorf("%w: logo url should be valid github raw url, error %s", ErrInvalidMetadata, err.Error())
-		}
-	}
-	return nil
 }
