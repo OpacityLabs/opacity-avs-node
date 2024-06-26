@@ -30,6 +30,9 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
 
 WORKDIR /opacity-avs-node
 COPY . .
+RUN rm ./bin/avs-cli
+RUN rm ./bin/eigenlayer
+
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -42,6 +45,9 @@ RUN gramine-sgx-gen-private-key
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
 RUN tar -xvf go1.21.0.linux-amd64.tar.gz
 RUN mv go /usr/local
+RUN export GOROOT=/usr/local/go
+RUN GOPATH=$HOME/go
+RUN PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
 RUN mv /root/go/bin/eigenlayer ./bin/
 # This should be associated with an acive IAS SPID in order for
