@@ -18,7 +18,7 @@ import (
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
 	"github.com/Layr-Labs/eigensdk-go/utils"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
-	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
+
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
 	contractDelegationManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/DelegationManager"
 	contractOpacityServiceManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/OpacityServiceManager"
@@ -27,6 +27,16 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/urfave/cli"
+)
+
+var (
+	/* Required Flags */
+	ConfigFileFlag = cli.StringFlag{
+		Name:     "config",
+		Required: true,
+		Usage:    "Load configuration from `FILE`",
+	}
+	/* Optional Flags */
 )
 
 type OpacityConfig struct {
@@ -50,7 +60,7 @@ func FailIfNoFile(path string) error {
 
 func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
-	configPath := ctx.GlobalString(config.ConfigFileFlag.Name)
+	configPath := ctx.GlobalString(ConfigFileFlag.Name)
 	fmt.Println("Config Path:", configPath)
 
 	FailIfNoFile(configPath)
