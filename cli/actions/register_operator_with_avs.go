@@ -36,6 +36,7 @@ var (
 
 var (
 	ErrInvalidNumberOfArgs   = errors.New("invalid number of arguments")
+	ErrNoECDSAKeyPassword    = errors.New("ecdsa key password env var not set")
 	ErrInvalidYamlFile       = errors.New("invalid yaml file")
 	ErrInvalidMetadata       = errors.New("invalid metadata")
 	ErrOperatorNotRegistered = errors.New("operator not registered to eigenlayer, please register operator to eigenlayer first")
@@ -55,7 +56,8 @@ type OpacityConfig struct {
 
 func FailIfNoFile(path string) error {
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		log.Panicln("File does not exist:", path)
+		log.Fatalln("File does not exist:", path)
+		return err
 	}
 	return nil
 }
@@ -70,18 +72,21 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	nodeConfig := OpacityConfig{}
 	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
 	if err != nil {
+		log.Fatalln(err)
 		return err
 	}
 
 	configJson, err := json.MarshalIndent(nodeConfig, "", "  ")
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatalln(err)
+		return err
 	}
 	fmt.Println("Config:", string(configJson))
 
 	ecdsaKeyPassword, ok := os.LookupEnv("OPERATOR_ECDSA_KEY_PASSWORD")
 	if !ok {
-		log.Panicln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
+		log.Fatalln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
+		return ErrNoECDSAKeyPassword
 	}
 
 	FailIfNoFile(nodeConfig.ECDSAPrivateKeyStorePath)
@@ -101,12 +106,10 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 	client, err := ethclient.Dial(nodeConfig.EthRpcUrl)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
 	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
@@ -114,14 +117,17 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 	delegationManagerContract, err := contractDelegationManager.NewContractDelegationManager(delegationManagerAddress, client)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 	opacityServiceManagerContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	// Check if operator registered to EigenLayer
@@ -169,7 +175,8 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		operatorSignature, err := crypto.Sign(hash[:], operatorEcdsaPrivKey)
 		operatorSignature[64] += 27
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
+			return err
 		}
 
 		var signature = contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry{
@@ -182,18 +189,21 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
+			return err
 		}
 
 		gasPrice, err := client.SuggestGasPrice(context.Background())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
+			return err
 		}
 
 		auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
 
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalln(err)
+			return err
 
 		}
 
@@ -205,9 +215,9 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		res, err := opacityServiceManagerContract.RegisterOperatorToAVS(auth, operatorAddress, signature)
 		if err != nil {
 			fmt.Println(err)
+			return err
 		}
 		fmt.Println("Register Operator to AVS TX:", res.Hash().Hex())
-
 		return nil
 
 	} else {
