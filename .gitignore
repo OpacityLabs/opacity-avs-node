@@ -38,7 +38,7 @@ Cargo.lock
 tlsn
 keys
 
-fixture/notary/*
+fixture/notary/*.key
 fixture/tls/*.csr
 fixture/tls/*.key
 fixture/tls/*.crt
