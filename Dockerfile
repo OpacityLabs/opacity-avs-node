@@ -49,7 +49,7 @@ ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
-RUN mv /root/go/bin/eigenlayer ./bin/
+RUN mv $HOME/go/bin/eigenlayer ./bin/
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
