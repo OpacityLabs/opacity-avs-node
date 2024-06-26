@@ -25,7 +25,8 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
   libssl-dev \
   openssl \
   build-essential \
-  lld
+  lld \
+  wget
 
 WORKDIR /opacity-avs-node
 COPY . .
@@ -37,14 +38,19 @@ RUN gramine-sgx-gen-private-key
 # FROM ubuntu:22.04 as builder
 
 
-
+# Install Go
+RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+RUN tar -xvf go1.21.0.linux-amd64.tar.gz
+RUN mv go /usr/local
+RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+RUN mv /root/go/bin/eigenlayer ./bin/
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 # ENV RA_CLIENT_LINKABLE=1
-RUN cargo build --release
-RUN make SGX=1
-RUN cargo clean
+# RUN cargo build --release
+# RUN make SGX=1
+# RUN cargo clean
 
 
 # Copy default fixture folder for default usage
