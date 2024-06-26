@@ -99,8 +99,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	if operatorEcdsaPrivKey == nil {
 		log.Panicln("Unable to decrypt operator private key.")
 	}
-
-	fmt.Println(crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey).Hex())
 	if err != nil {
 		return err
 	}
@@ -136,7 +134,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 		return err
 	}
-	if isOperatorRegistered {
+	if !isOperatorRegistered {
 		log.Fatalln(ErrOperatorNotRegistered)
 		return ErrOperatorNotRegistered
 
