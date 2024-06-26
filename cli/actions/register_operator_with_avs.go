@@ -210,11 +210,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			Expiry:    expiryBigInt,
 		}
 
-		// nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
-		// if err != nil {
-		// 	log.Fatalln(err)
-		// 	return err
-		// }
+		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
+		if err != nil {
+			log.Fatalln(err)
+			return err
+		}
 
 		gasPrice, err := client.SuggestGasPrice(context.Background())
 		if err != nil {
@@ -230,10 +230,10 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 		}
 
-		auth.Nonce = big.NewInt(1)
+		auth.Nonce = big.NewInt(int64(nonce))
 		auth.Value = big.NewInt(0)     // in wei
 		auth.GasLimit = uint64(300000) // in units
-		auth.GasPrice = gasPrice.Add(gasPrice, gasPrice)
+		auth.GasPrice = gasPrice
 
 		g1HashedMsgToSign, err := registryCoordinatorContract.PubkeyRegistrationMessageHash(nil, operatorAddress)
 		if err != nil {
