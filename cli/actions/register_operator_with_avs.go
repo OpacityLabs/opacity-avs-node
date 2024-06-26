@@ -11,7 +11,12 @@ import (
 	"os"
 	"time"
 
+	// elContracts "github.com/Layr-Labs/eigensdk-go/chainio/clients/elcontracts"
+	// "github.com/Layr-Labs/eigensdk-go/chainio/txmgr"
+
+	"github.com/Layr-Labs/eigenlayer-cli/pkg/types"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
+	"github.com/Layr-Labs/eigensdk-go/utils"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 	"github.com/Layr-Labs/incredible-squaring-avs/core/config"
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
@@ -33,6 +38,7 @@ type OpacityConfig struct {
 	ChainId                     int    `yaml:"chain_id"`
 	EthRpcUrl                   string `yaml:"eth_rpc_url"`
 	ECDSAPrivateKeyStorePath    string `yaml:"ecdsa_private_key_store_path"`
+	OperatorConfig              string `yaml:"operator_config"`
 }
 
 func FailIfNoFile(path string) error {
@@ -85,13 +91,16 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	if err != nil {
+		return err
+	}
 	opacityAddress := common.HexToAddress(nodeConfig.OpacityAVSAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
 	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
-	operator2Address := common.HexToAddress("0xFE8463CA0A9b436FdC5f75709AD5a43961802d69")
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
-	delegationManager, err := contractDelegationManager.NewContractDelegationManagerCaller(delegationManagerAddress, client)
+	delegationManagerContract, err := contractDelegationManager.NewContractDelegationManager(delegationManagerAddress, client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,95 +109,129 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	// Check if operator registered to EigenLayer
-	isOperatorRegistered, err := delegationManager.IsOperator(nil, operatorAddress)
+	FailIfNoFile(nodeConfig.OperatorConfig)
+	operatorConfig, err := readConfigFile(nodeConfig.OperatorConfig, nodeConfig.AVSDirectoryAddress)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("Operator registered:", isOperatorRegistered)
-	isOperatorRegistered2, err := delegationManager.IsOperator(nil, operator2Address)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	fmt.Println("Operator2 registered:", isOperatorRegistered2)
 
-	// Check if operator registered to avs
+	// Check if operator registered to EigenLayer
+	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	if !isOperatorRegistered {
+		// Register operator to EigenLayer
+		fmt.Println("Operator not registered to EigenLayer, registering...")
+		if len(operatorConfig.Operator.MetadataUrl) == 0 {
+			log.Panicln("Metadata URL not set in operator config file. Exiting...")
+		}
+
+		opDetails := contractDelegationManager.IDelegationManagerOperatorDetails{
+			EarningsReceiver:         common.HexToAddress(operatorConfig.Operator.EarningsReceiverAddress),
+			StakerOptOutWindowBlocks: operatorConfig.Operator.StakerOptOutWindowBlocks,
+			DelegationApprover:       common.HexToAddress(operatorConfig.Operator.DelegationApproverAddress),
+		}
+		res, err := delegationManagerContract.RegisterAsOperator(nil, opDetails, operatorConfig.Operator.MetadataUrl)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		fmt.Println("Register Operator to EigenLayer TX:", res.Hash().Hex())
+		time.Sleep(5 * time.Second)
+	} else {
+		fmt.Println("Operator already registered to EigenLayer")
+	}
+
+	// Check if operator registered to AVS
 	operatorStatus, err := avsDirectoryContract.AvsOperatorStatus(nil, opacityAddress, operatorAddress)
 	if err != nil {
 		log.Fatal(err)
 		return err
 	}
-	fmt.Println("Operator status:", operatorStatus)
-	operator2Status, err := avsDirectoryContract.AvsOperatorStatus(nil, opacityAddress, operator2Address)
+
+	if operatorStatus == 0 {
+		// Register operator to AVS
+
+		saltBytes := make([]byte, 32)
+		var salt [32]byte
+		rand.Read(saltBytes)
+		copy(salt[:], saltBytes)
+
+		expiry := time.Now().UTC().Unix()
+		expiry += 60 * 60 * 24
+
+		expiryBigInt := big.NewInt(int64(expiry))
+		fmt.Println("Expiry:", expiryBigInt)
+		fmt.Println("operatorAddress:", operatorAddress)
+		fmt.Println("avsAddress:", opacityAddress)
+
+		hash, err := avsDirectoryContract.CalculateOperatorAVSRegistrationDigestHash(nil, operatorAddress, opacityAddress, salt, expiryBigInt)
+		if err != nil {
+			log.Fatal(err)
+
+		}
+		fmt.Println("Registering operator with Hash", hash)
+		operatorSignature, err := crypto.Sign(hash[:], operatorEcdsaPrivKey)
+		operatorSignature[64] += 27
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var signature = contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry{
+			Signature: operatorSignature,
+			Salt:      salt,
+			Expiry:    expiryBigInt,
+		}
+
+		fmt.Println("Signature:", signature)
+
+		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
+
+		if err != nil {
+			log.Fatal(err)
+
+		}
+
+		auth.Nonce = big.NewInt(int64(nonce))
+		auth.Value = big.NewInt(0)     // in wei
+		auth.GasLimit = uint64(300000) // in units
+		auth.GasPrice = gasPrice
+
+		res, err := opacityServiceManagerContract.RegisterOperatorToAVS(auth, operatorAddress, signature)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Register Operator to AVS TX:", res.Hash().Hex())
+
+		return nil
+
+	} else {
+		fmt.Println("Operator already registered to AVS")
+		return nil
+	}
+
+}
+
+func readConfigFile(path string, avsDirectoryAddress string) (*types.OperatorConfig, error) {
+	var operatorCfg types.OperatorConfig
+	err := utils.ReadYamlConfig(path, &operatorCfg)
 	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	fmt.Println("Operator2 status:", operator2Status)
-	return nil
-
-	saltBytes := make([]byte, 32)
-	var salt [32]byte
-	rand.Read(saltBytes)
-	copy(salt[:], saltBytes)
-
-	expiry := time.Now().UTC().Unix()
-	expiry += 60 * 60 * 24
-
-	expiryBigInt := big.NewInt(int64(expiry))
-	fmt.Println("Expiry:", expiryBigInt)
-	fmt.Println("operatorAddress:", operatorAddress)
-	fmt.Println("avsAddress:", opacityAddress)
-
-	hash, err := avsDirectoryContract.CalculateOperatorAVSRegistrationDigestHash(nil, operatorAddress, opacityAddress, salt, expiryBigInt)
-	if err != nil {
-		log.Fatal(err)
-
-	}
-	fmt.Println("Registering operator with Hash", hash)
-	operatorSignature, err := crypto.Sign(hash[:], operatorEcdsaPrivKey)
-	operatorSignature[64] += 27
-	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	var signature = contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry{
-		Signature: operatorSignature,
-		Salt:      salt,
-		Expiry:    expiryBigInt,
-	}
-
-	fmt.Println("Signature:", signature)
-
-	nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
-
-	if err != nil {
-		log.Fatal(err)
-
-	}
-
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-
-	res, err := opacityServiceManagerContract.RegisterOperatorToAVS(auth, operatorAddress, signature)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Register Operator to AVS TX:", res.Hash().Hex())
-
-	return nil
+	operatorCfg.ELAVSDirectoryAddress = avsDirectoryAddress
+	return &operatorCfg, nil
 }
