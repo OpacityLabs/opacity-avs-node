@@ -150,8 +150,30 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			StakerOptOutWindowBlocks: operatorConfig.Operator.StakerOptOutWindowBlocks,
 			DelegationApprover:       common.HexToAddress(operatorConfig.Operator.DelegationApproverAddress),
 		}
-		fmt.Println("Registering operator with details", opDetails)
-		res, err := delegationManagerContract.RegisterAsOperator(nil, opDetails, operatorConfig.Operator.MetadataUrl)
+
+		nonce, err := client.PendingNonceAt(context.Background(), operatorAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		auth, err := bind.NewKeyedTransactorWithChainID(operatorEcdsaPrivKey, big.NewInt(int64(nodeConfig.ChainId)))
+
+		if err != nil {
+			log.Fatal(err)
+
+		}
+
+		auth.Nonce = big.NewInt(int64(nonce))
+		auth.Value = big.NewInt(0)     // in wei
+		auth.GasLimit = uint64(300000) // in units
+		auth.GasPrice = gasPrice
+
+		res, err := delegationManagerContract.RegisterAsOperator(auth, opDetails, operatorConfig.Operator.MetadataUrl)
 		if err != nil {
 			log.Fatal(err)
 			return err
