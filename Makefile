@@ -95,7 +95,7 @@ register-eigen-operator:
 	@bin/eigenlayer operator register operator.yaml
 
 register-opacity-node: ## 
-	go run cli/main.go --config config/opacity.config.yaml register-operator-with-avs
+	@bin/avs-cli --config config/opacity.config.yaml register-operator-with-avs
 
 
 
