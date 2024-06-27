@@ -1,3 +1,4 @@
+#!/bin/bash
 set -e
 make register-opacity-node
 make generate-notary-keys
