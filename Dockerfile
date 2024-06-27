@@ -60,7 +60,7 @@ RUN cargo build --release
 RUN make SGX=1
 RUN cargo clean
 
-FROM gramine as final
+FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
