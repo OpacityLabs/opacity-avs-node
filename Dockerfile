@@ -50,6 +50,8 @@ ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
 RUN mv /go/bin/eigenlayer ./bin/
 RUN go build -o ./bin/avs-cli cli/main.go
+RUN rm go1.21.0.linux-amd64.tar.gz
+
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
@@ -57,6 +59,10 @@ RUN go build -o ./bin/avs-cli cli/main.go
 RUN cargo build --release
 RUN make SGX=1
 RUN cargo clean
+
+FROM gramine as final
+WORKDIR /opacity-avs-node
+COPY --from=build /opacity-avs-node /opacity-avs-node
 
 
 # Copy default fixture folder for default usage
