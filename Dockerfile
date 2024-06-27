@@ -78,6 +78,6 @@ RUN gramine-sgx-gen-private-key
 # COPY --from=builder /usr/local/cargo/bin/opacity-avs-node /usr/local/bin/opacity-avs-node
 # Label to link this image with the repository in Github Container Registry (https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package#connecting-a-repository-to-a-container-image-using-the-command-line)
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
-LABEL org.opencontainers.image.description="An implementation of the opacity server in Rust."
+LABEL org.opencontainers.image.description="An implementation of the opacity node in Rust."
 EXPOSE 7047
 CMD ["make", "start-node"]
