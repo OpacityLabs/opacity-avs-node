@@ -80,4 +80,4 @@ RUN gramine-sgx-gen-private-key
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity server in Rust."
 EXPOSE 7047
-CMD [ "make", "start-node"]
+ENTRYPOINT ["make", "start-node"]
