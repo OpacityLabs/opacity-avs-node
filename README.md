@@ -149,11 +149,12 @@ For Ubuntu 22.04:
 There is one config value you must set manually in config/opacity.config.yaml
 
 ```
+#! Do not change this
 ecdsa_private_key_store_path: /opacity-avs-node/opacity.ecdsa.key.json
-# Do not change this
+#! Do not change this
 bls_private_key_store_path: /opacity-avs-node/opacity.bls.key.json
 # Set this
-node_public_ip:
+node_public_ip: <your ip>
 ```
 
 
