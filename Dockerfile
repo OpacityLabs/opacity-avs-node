@@ -20,7 +20,7 @@ FROM gramineproject/gramine:v1.5 as gramine
 
 
 # Install pkg-config and libssl-dev for async-tungstenite to use (as explained above)
-RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   pkg-config \
   libssl-dev \
   openssl \
@@ -65,7 +65,7 @@ FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
-RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \ 
   make
 
