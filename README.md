@@ -28,7 +28,7 @@ First we should check you are on a valid SGX machine.
 Head over to https://support.fortanix.com/hc/en-us/articles/4414753648788-SGX-Detect-Tool and download the binary for your operating system.
 
 Ubuntu 22.04:
-`wget https://download.fortanix.com/sgx-detect/ubuntu22.04/sgx-detect?_gl=1*1j4w6dh*_gcl_au*MTM1MDY4MDQ2NS4xNzE4ODUwMTk1 -O sgx-detect`
+`wget https://download.fortanix.com/sgx-detect/ubuntu22.04/sgx-detect?_gl=1*1saf6me*_gcl_au*NDAwNTE3NzE0LjE3MTk1MjQyNDQ -O sgx-detect`
 
 `chmod +x sgx-detect`
 
@@ -38,7 +38,12 @@ You should see:
 
 <img width="527" alt="Screenshot 2024-06-20 at 1 39 41 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/2cdd75c3-c426-4619-a9cc-a9455b715dc0">
 
-If you see any red on the output, please contact @EulerLagrange217 on telegram
+
+
+
+If you see any red on the output, please follow the guide here: https://github.com/OpacityLabs/opacity-avs-node/blob/main/SGX.md
+
+otherwise contact @EulerLagrange217 on telegram
 
 ## Install Go+EigenLayer cli
 
