@@ -64,6 +64,8 @@ FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
+RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
+  openssl
 
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
