@@ -144,7 +144,18 @@ For Ubuntu 22.04:
 `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
 
 
-## Register Opacity Node
+## Run Opacity Node
+
+There is one config value you must set manually in config/opacity.config.yaml
+
+```
+ecdsa_private_key_store_path: /opacity-avs-node/opacity.ecdsa.key.json
+# Do not change this
+bls_private_key_store_path: /opacity-avs-node/opacity.bls.key.json
+# Set this
+node_public_ip:
+```
+
 
 Run:
 

@@ -7,7 +7,9 @@ avs_directory_address: 0x055733000064333CaDDbC92763c58BF0192fFeBf
 eigenlayer_delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7
 chain_id: 17000
 eth_rpc_url: https://ethereum-holesky.publicnode.com
+# Do not change this
 ecdsa_private_key_store_path: /opacity-avs-node/opacity.ecdsa.key.json
+# Do not change this
 bls_private_key_store_path: /opacity-avs-node/opacity.bls.key.json
-operator_config: ./operator.yaml
+# Set this
 node_public_ip:

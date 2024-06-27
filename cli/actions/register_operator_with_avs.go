@@ -56,7 +56,6 @@ type OpacityConfig struct {
 	EthRpcUrl                   string `yaml:"eth_rpc_url"`
 	ECDSAPrivateKeyStorePath    string `yaml:"ecdsa_private_key_store_path"`
 	BLSPrivateKeyStorePath      string `yaml:"bls_private_key_store_path"`
-	OperatorConfig              string `yaml:"operator_config"`
 	NodePublicIP                string `yaml:"node_public_ip"`
 }
 
