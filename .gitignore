@@ -22,8 +22,8 @@ Cargo.lock
 # vscode project specific settings
 .vscode/
 
-# transcript
-*.json
+
+
 
 # env var
 *.env
