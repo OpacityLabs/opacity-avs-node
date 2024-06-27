@@ -39,20 +39,16 @@ If you see any red on the output, please contact @EulerLagrange217 on telegram
 
 The following is not Opacity specific but for EigenLayer. We will be summarizing the following verboase guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation
 
-1. Install EigenLayer-CLI
 
-For Ubuntu 22.04:
-`install-eigenlayer-cli`
-
-2. Create ECDSA and BLS keys
+1. Create ECDSA and BLS keys
 
 `make generate-keys`
 
 OR
 
-`eigenlayer operator keys create --key-type ecdsa opacity`
+`./bin/eigenlayer operator keys create --key-type ecdsa opacity`
 
-`eigenlayer operator keys create --key-type bls opacity`
+`./bin/eigenlayer operator keys create --key-type bls opacity`
 
 To check if you did it right you can run:
 
@@ -60,15 +56,15 @@ To check if you did it right you can run:
 
 <img width="1487" alt="Screenshot 2024-06-20 at 1 40 44 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/5b96937d-fa79-4d68-9a5a-d86785536c4c">
 
-3. Fund ECDSA Wallet with testnet ETH
+2. Fund ECDSA Wallet with testnet ETH
 
 We need to load your operator wallet with some holesky eth to submit transactions. See: https://docs.eigenlayer.xyz/eigenlayer/restaking-guides/restaking-user-guide/testnet/obtaining-testnet-eth-and-liquid-staking-tokens-lsts
 
-4. Use some Holesky eth to get holesky stETH:
+3. Use some Holesky eth to get holesky stETH:
 
 https://stake-holesky.testnet.fi/
 
-5. Operator config
+4. Operator config
 
 We need to generate some metadata so eigenlayer can show you nicely in their UI.
 
@@ -76,7 +72,7 @@ I would recommend forking this repo: https://github.com/Hmac512/eigenpod and cha
 
 Run:
 
-`eigenlayer operator config create`
+`./bin/eigenlayer operator config create`
 
 Say yes to populating the config
 
@@ -118,13 +114,13 @@ Remember to fill out the metadata_url to your forked repo.
 
 Make a backup of your operator.yaml for convenience
 
-6. Register Node Operator
+5. Register Node Operator
 
 run:
 
 `make register-eigen-operator`
 OR
-`eigenlayer operator register operator.yaml`
+`./bin/eigenlayer operator register operator.yaml`
 
 You should see:
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
@@ -139,8 +135,8 @@ For Ubuntu 22.04:
 `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin`
 
 
-## Register Node to Opacity AVS
+## Register Opacity Node
 
 Run:
 
-`OPERATOR_ECDSA_KEY_PASSWORD="" make register-opacity-node`
+`make start-container`
