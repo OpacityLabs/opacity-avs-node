@@ -89,6 +89,12 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	}
 	fmt.Println("Config:", string(configJson))
 
+	if nodeConfig.NodePublicIP == "" {
+		log.Fatalln("NodePublicIP not set in config file")
+		return errors.New("NodePublicIP not set in config file")
+
+	}
+
 	ecdsaKeyPassword, ok := os.LookupEnv("OPERATOR_ECDSA_KEY_PASSWORD")
 	if !ok {
 		log.Fatalln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
