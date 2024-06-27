@@ -139,4 +139,4 @@ For Ubuntu 22.04:
 
 Run:
 
-`make start-container`
+`OPERATOR_ECDSA_KEY_PASSWORD="" OPERATOR_BLS_KEY_PASSWORD="" make start-container`
