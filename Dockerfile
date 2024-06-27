@@ -70,6 +70,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
   make
 
 RUN gramine-sgx-gen-private-key
+COPY --from=final /opacity-avs-node/opacity-avs-node /usr/local/bin
 
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
@@ -80,4 +81,4 @@ RUN gramine-sgx-gen-private-key
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity node in Rust."
 EXPOSE 7047
-CMD ["start-node.sh"]
+CMD ["make","start-node"]
