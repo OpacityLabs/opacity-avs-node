@@ -57,6 +57,9 @@ RUN cargo build --release
 RUN make SGX=1
 RUN mv ./target/release/opacity-avs-node .
 RUN cargo clean
+# RUN mkdir ./target
+# RUN mkdir ./target/release
+# RUN mv ./opacity-avs-node ./target/release
 
 FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node
