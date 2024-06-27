@@ -61,7 +61,7 @@ endif
 .PHONY: start-node
 start-node: 
 	@set -e
-	@make register-opacity-node
+#	@make register-opacity-node
 	@make generate-notary-keys
 	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
@@ -122,11 +122,11 @@ generate-notary-keys:
 start-container:
 	@docker run -it --device /dev/sgx_enclave \
   		-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
-  		-v ./data:/workdir/data  \
   		--volume /home/ubuntu/.eigenlayer/operator_keys/opacity.ecdsa.key.json:/opacity-avs-node/opacity.ecdsa.key.json \
   		--volume /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json:/opacity-avs-node/opacity.bls.key.json \
 		-e OPERATOR_ECDSA_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
 		-e OPERATOR_BLS_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
+		-p 7047:7047 \
   		opacitylabseulerlagrange/opacity-avs-node:latest bash
 
 
