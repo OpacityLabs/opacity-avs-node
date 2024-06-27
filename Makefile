@@ -121,10 +121,10 @@ generate-notary-keys:
 
 .PHONY: start-container
 start-container:
-	ifndef OPERATOR_ECDSA_KEY_PASSWORD
+	ifndef $(OPERATOR_ECDSA_KEY_PASSWORD)
 	$(error OPERATOR_ECDSA_KEY_PASSWORD is not set)
 	endif
-	ifndef OPERATOR_BLS_KEY_PASSWORD
+	ifndef $(OPERATOR_BLS_KEY_PASSWORD)
 	$(error OPERATOR_BLS_KEY_PASSWORD is not set)
 	endif
 	@docker run -d -it --device /dev/sgx_enclave --device /dev/sgx_provision \
