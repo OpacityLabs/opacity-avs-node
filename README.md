@@ -168,6 +168,15 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
+We recommend you take the steps to not require sudo to run docker commands:
+
+```
+
+sudo groupadd docker
+sudo usermod -aG docker $USER
+
+```
+
 ## Run Opacity Node
 
 There is one config value you must set manually in config/opacity.config.yaml
