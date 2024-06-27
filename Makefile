@@ -78,7 +78,7 @@ distclean: clean
 docker-build:
 	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)
 
-.PHONY: docker-buipushld
+.PHONY: docker-push
 docker-push:
 	docker push opacitylabseulerlagrange/opacity-avs-node:$(GIT_HASH)	
 
@@ -129,6 +129,6 @@ start-container:
 		-e OPERATOR_ECDSA_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
 		-e OPERATOR_BLS_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
 		-p 7047:7047 \
-  		opacitylabseulerlagrange/opacity-avs-node:latest bash
+  		opacitylabseulerlagrange/opacity-avs-node:latest
 
 
