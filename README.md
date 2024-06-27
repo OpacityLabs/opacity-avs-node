@@ -6,9 +6,7 @@ For support contact @EulerLagrange217 on telegram
 
 Node Specs Recommended:
 
-
 <img width="728" alt="Screenshot 2024-06-27 at 10 37 58 AM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/664a74fb-1845-4eb5-b699-53bea2611a07">
-
 
 The Opacity node must be run with a Intel SGX with SGX2 enabled. If you want to use a cloud provider, please use one of these:
 
@@ -45,7 +43,7 @@ If you see any red on the output, please contact @EulerLagrange217 on telegram
 ## Install Go+EigenLayer cli
 
 The flow is roughly
-  
+
 ```
 wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
 sudo tar -xvf go1.21.0.linux-amd64.tar.gz -C /usr/local
@@ -56,15 +54,13 @@ export go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
 mv /home/azureuser/go/bin/eigenlayer ./bin/
 ```
 
-
 ## Register Node Operator with EigenLayer
 
 The following is not Opacity specific but for EigenLayer. We will be summarizing the following verboase guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation
 
-
 1. Create ECDSA and BLS keys
 
-`make generate-keys`
+`make generate-operator-keys`
 
 OR
 
@@ -75,7 +71,6 @@ OR
 To check if you did it right you can run:
 
 `make list-keys`
-
 
 <img width="1487" alt="Screenshot 2024-06-20 at 1 40 44 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/5b96937d-fa79-4d68-9a5a-d86785536c4c">
 
@@ -149,7 +144,6 @@ You should see:
 
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
 
-
 ## Install Docker
 
 See: https://docs.docker.com/engine/install
@@ -174,7 +168,6 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-
 ## Run Opacity Node
 
 There is one config value you must set manually in config/opacity.config.yaml
@@ -187,7 +180,6 @@ bls_private_key_store_path: /opacity-avs-node/opacity.bls.key.json
 # Set this
 node_public_ip: <your ip>
 ```
-
 
 Run:
 
