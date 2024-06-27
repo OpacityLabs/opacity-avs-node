@@ -62,7 +62,7 @@ RUN cargo clean
 
 FROM gramine as final
 WORKDIR /opacity-avs-node
-COPY --from=build /opacity-avs-node /opacity-avs-node
+COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
 
 # Copy default fixture folder for default usage
