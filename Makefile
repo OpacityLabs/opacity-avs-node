@@ -121,9 +121,8 @@ generate-notary-keys:
 
 .PHONY: start-container
 start-container:
-	@test -n "$(OPERATOR_ECDSA_KEY_PASSWORD)" || (echo "OPERATOR_ECDSA_KEY_PASSWORD is not set" && exit 1)
-	@test -n "$(OPERATOR_BLS_KEY_PASSWORD)" || (echo "OPERATOR_BLS_KEY_PASSWORD is not set" && exit 1)
-
+#	@test -n "$(OPERATOR_ECDSA_KEY_PASSWORD)" || (echo "OPERATOR_ECDSA_KEY_PASSWORD is not set" && exit 1)
+#	@test -n "$(OPERATOR_BLS_KEY_PASSWORD)" || (echo "OPERATOR_BLS_KEY_PASSWORD is not set" && exit 1)
 	@docker run -d -it --device /dev/sgx_enclave --device /dev/sgx_provision \
   		-v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
 		--security-opt seccomp=seccomp.json \
