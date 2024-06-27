@@ -36,9 +36,6 @@ RUN rm ./bin/eigenlayer
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-# RUN rustup toolchain install 1.78.0
-RUN gramine-sgx-gen-private-key
-# FROM ubuntu:22.04 as builder
 
 
 # Install Go
@@ -68,6 +65,8 @@ COPY --from=gramine /opacity-avs-node /opacity-avs-node
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
   openssl \ 
   make
+
+RUN gramine-sgx-gen-private-key
 
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture

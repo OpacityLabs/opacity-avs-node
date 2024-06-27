@@ -63,7 +63,8 @@ start-node:
 	@set -e
 #	@make register-opacity-node
 	@make generate-notary-keys
-	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
+	@./opacity-avs-node --config-file ./config/config.yaml
+#	$(GRAMINE) opacity-avs-node --config-file ./config/config.yaml
 
 .PHONY: clean
 clean:
