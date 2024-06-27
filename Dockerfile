@@ -36,7 +36,7 @@ RUN rm ./bin/eigenlayer
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
-
+RUN gramine-sgx-gen-private-key
 
 # Install Go
 RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
