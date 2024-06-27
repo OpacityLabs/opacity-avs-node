@@ -174,6 +174,7 @@ We recommend you take the steps to not require sudo to run docker commands:
 
 sudo groupadd docker
 sudo usermod -aG docker $USER
+newgrp docker
 
 ```
 
