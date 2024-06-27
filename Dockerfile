@@ -70,7 +70,7 @@ RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-reco
   make
 
 RUN gramine-sgx-gen-private-key
-COPY --from=final /opacity-avs-node/opacity-avs-node /usr/local/bin
+RUN cp /opacity-avs-node/opacity-avs-node /usr/local/bin
 
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
