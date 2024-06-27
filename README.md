@@ -7,6 +7,9 @@ For support contact @EulerLagrange217 on telegram
 Node Specs Recommended:
 
 
+<img width="728" alt="Screenshot 2024-06-27 at 10 37 58 AM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/664a74fb-1845-4eb5-b699-53bea2611a07">
+
+
 The Opacity node must be run with a Intel SGX with SGX2 enabled. If you want to use a cloud provider, please use one of these:
 
 - Azure (https://learn.microsoft.com/en-us/azure/confidential-computing/quick-create-portal): Standard_DC2s_v2 is recommended
@@ -34,6 +37,7 @@ Ubuntu 22.04:
 `sudo ./sgx-detect`
 
 You should see:
+
 <img width="527" alt="Screenshot 2024-06-20 at 1 39 41 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/2cdd75c3-c426-4619-a9cc-a9455b715dc0">
 
 If you see any red on the output, please contact @EulerLagrange217 on telegram
@@ -56,6 +60,7 @@ OR
 To check if you did it right you can run:
 
 `make list-keys`
+
 
 <img width="1487" alt="Screenshot 2024-06-20 at 1 40 44 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/5b96937d-fa79-4d68-9a5a-d86785536c4c">
 
@@ -126,6 +131,7 @@ OR
 `./bin/eigenlayer operator register operator.yaml`
 
 You should see:
+
 <img width="1572" alt="Screenshot 2024-06-20 at 1 35 59 PM" src="https://github.com/OpacityLabs/opacity-avs-node/assets/76923506/4645e4b4-3599-4b65-a0e3-a6baa34af987">
 
 
