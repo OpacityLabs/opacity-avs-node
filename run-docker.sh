@@ -6,4 +6,4 @@ OPERATOR_ECDSA_KEY_PASSWORD="" OPERATOR_BLS_KEY_PASSWORD="" docker run -it --dev
 		-e OPERATOR_ECDSA_KEY_PASSWORD=$OPERATOR_ECDSA_KEY_PASSWORD\
 		-e OPERATOR_BLS_KEY_PASSWORD=$OPERATOR_BLS_KEY_PASSWORD\
 		-p 7047:7047 \
-  		opacitylabseulerlagrange/opacity-avs-node:latest
+  		opacitylabseulerlagrange/opacity-avs-node:latest bash
