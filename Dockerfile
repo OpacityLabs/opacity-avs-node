@@ -58,6 +58,7 @@ RUN rm go1.21.0.linux-amd64.tar.gz
 # ENV RA_CLIENT_LINKABLE=1
 RUN cargo build --release
 RUN make SGX=1
+RUN mv ./target/release/opacity-avs-node .
 RUN cargo clean
 
 FROM gramineproject/gramine:v1.5 as final
@@ -65,7 +66,8 @@ WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
 RUN apt-get update && apt-get -y upgrade && apt-get install -y --no-install-recommends \
-  openssl
+  openssl \ 
+  make
 
 # Copy default fixture folder for default usage
 # COPY --from=builder /usr/src/opacity-avs-node/fixture ./fixture
