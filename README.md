@@ -42,6 +42,21 @@ You should see:
 
 If you see any red on the output, please contact @EulerLagrange217 on telegram
 
+## Install Go+EigenLayer cli
+
+The flow is roughly
+  
+```
+wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+sudo tar -xvf go1.21.0.linux-amd64.tar.gz -C /usr/local
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+export go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+mv /home/azureuser/go/bin/eigenlayer ./bin/
+```
+
+
 ## Register Node Operator with EigenLayer
 
 The following is not Opacity specific but for EigenLayer. We will be summarizing the following verboase guide: https://docs.eigenlayer.xyz/eigenlayer/operator-guides/operator-installation
