@@ -127,6 +127,6 @@ start-container:
   		--volume /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json:/opacity-avs-node/opacity.bls.key.json \
 		-e OPERATOR_ECDSA_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
 		-e OPERATOR_BLS_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
-  		opacitylabseulerlagrange/opacity-avs-node:244be9972eeb1b5d3e7ab8301d19275879f4f4e1
+  		opacitylabseulerlagrange/opacity-avs-node:latest
 
 
