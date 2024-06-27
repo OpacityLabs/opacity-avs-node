@@ -1,4 +1,5 @@
-# this sets the logger level (true = info, false = debug)
+#! This config is internal for the docker image, no need to modify it
+
 production: false
 registry_coordinator_address: 0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
 opacity_avs_address: 0xbfc5d26c6eeb46475eb3960f5373edc5341ee535
