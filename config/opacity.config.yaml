@@ -10,4 +10,4 @@ eth_rpc_url: https://ethereum-holesky.publicnode.com
 ecdsa_private_key_store_path: /opacity-avs-node/opacity.ecdsa.key.json
 bls_private_key_store_path: /opacity-avs-node/opacity.bls.key.json
 operator_config: ./operator.yaml
-node_public_ip: 0.0.0.0
+node_public_ip:
