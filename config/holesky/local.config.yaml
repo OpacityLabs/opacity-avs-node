@@ -12,4 +12,4 @@ ecdsa_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.ecd
 # Do not change this
 bls_private_key_store_path: /home/ubuntu/.eigenlayer/operator_keys/opacity.bls.key.json
 # Set this
-node_public_ip: 15.235.9.227
+node_public_ip:
