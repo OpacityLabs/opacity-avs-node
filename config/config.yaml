@@ -3,7 +3,7 @@ server:
   host: "0.0.0.0"
   port: 7047
   html-info: |
-    <h1>Opacity Server {version}!</h1>
+    <h1>Opacity Node {version}!</h1>
     <ul>
     <li>git commit hash: <a href="https://github.com/OpacityLabs/opacity-avs-node/commit/{git_commit_hash}">{git_commit_hash}</a></li>
     <li>git commit timestamp: {git_commit_timestamp}</li>
@@ -15,9 +15,9 @@ notarization:
   max-transcript-size: 20480
 
 tls:
-  enabled: true
-  private-key-pem-path: "./fixture/tls/notary.key"
-  certificate-pem-path: "./fixture/tls/notary.crt"
+  enabled: false
+  # private-key-pem-path: "./fixture/tls/notary.key"
+  # certificate-pem-path: "./fixture/tls/notary.crt"
 
 notary-key:
   private-key-pem-path: "./fixture/notary/notary.key"
