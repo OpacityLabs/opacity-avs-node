@@ -46,7 +46,8 @@ COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \ 
-  make
+  make && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN gramine-sgx-gen-private-key
 RUN cp /opacity-avs-node/opacity-avs-node /usr/local/bin
