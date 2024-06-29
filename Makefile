@@ -127,7 +127,7 @@ start-container:
 #
 	@test -n "$(OPERATOR_ECDSA_KEY_FILE)" || (echo "OPERATOR_ECDSA_KEY_FILE env var is not set" && exit 1)
 	@test -n "$(OPERATOR_BLS_KEY_FILE)" || (echo "OPERATOR_BLS_KEY_FILE env var is not set" && exit 1)
-	@docker run -d -it --volume $(OPERATOR_ECDSA_KEY_FILE):/opacity-avs-node/opacity.ecdsa.key.json \
+	@docker run -d -it --name opacity-avs --volume $(OPERATOR_ECDSA_KEY_FILE):/opacity-avs-node/opacity.ecdsa.key.json \
   		--volume $(OPERATOR_BLS_KEY_FILE):/opacity-avs-node/opacity.bls.key.json \
 		--volume ./config/opacity.config.yaml:/opacity-avs-node/config/opacity.config.yaml \
 		-e OPERATOR_ECDSA_KEY_PASSWORD=$(OPERATOR_ECDSA_KEY_PASSWORD)\
