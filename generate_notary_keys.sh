@@ -1,4 +1,4 @@
-
+mkdir -p fixture/notary
 
 # Root certificate
 openssl req -newkey rsa:2048 -nodes -keyout fixture/tls/rootCA.key -x509 -days 365 -out fixture/tls/rootCA.crt -subj "/C=US/ST=L1/L=EigenLayer/O=Opacity/CN=OpacityNetwork" 2>/dev/null
