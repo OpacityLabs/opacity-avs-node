@@ -1,12 +1,7 @@
-use async_tungstenite::{
-    tokio::connect_async_with_tls_connector_and_config, tungstenite::protocol::WebSocketConfig,
-};
 use http_body_util::{BodyExt as _, Full};
 use hyper::{body::Bytes, Request, StatusCode};
-use hyper_tls::HttpsConnector;
 use hyper_util::{
-    client::legacy::{connect::HttpConnector, Builder},
-    rt::{TokioExecutor, TokioIo},
+    rt::{TokioIo},
 };
 use notary_client::{NotarizationRequest, NotaryClient, NotaryConnection};
 use rstest::rstest;
@@ -17,11 +12,9 @@ use tlsn_prover::tls::{Prover, ProverConfig};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio_util::compat::{FuturesAsyncReadCompatExt, TokioAsyncReadCompatExt};
 use tracing::debug;
-use ws_stream_tungstenite::WsStream;
 
 use opacity_avs_node::{
-    read_pem_file, run_server, AuthorizationProperties, LoggingProperties, NotarizationProperties,
-    NotarizationSessionRequest, NotarizationSessionResponse, NotaryServerProperties,
+    read_pem_file, run_server, AuthorizationProperties, LoggingProperties, NotarizationProperties, NotaryServerProperties,
     NotarySigningKeyProperties, ServerProperties, TLSProperties,
 };
 
