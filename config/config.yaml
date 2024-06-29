@@ -15,9 +15,9 @@ notarization:
   max-transcript-size: 20480
 
 tls:
-  enabled: false
-  # private-key-pem-path: "./fixture/tls/notary.key"
-  # certificate-pem-path: "./fixture/tls/notary.crt"
+  enabled: true
+  private-key-pem-path: "./fixture/tls/notary.key"
+  certificate-pem-path: "./fixture/tls/notary.crt"
 
 notary-key:
   private-key-pem-path: "./fixture/notary/notary.key"
