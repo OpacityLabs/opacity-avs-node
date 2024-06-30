@@ -39,7 +39,7 @@ RUN cargo build --release
 RUN ./generate_notary_keys.sh
 RUN make SGX=1
 
-FROM gramineproject/gramine:v1.5 as final
+FROM gramineproject/gramine:latest as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
@@ -49,7 +49,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 RUN gramine-sgx-gen-private-key
-RUN cp /opacity-avs-node/opacity-avs-node /usr/local/bin
 
 LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
 LABEL org.opencontainers.image.description="An implementation of the opacity node in Rust."
