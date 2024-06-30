@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN gramine-sgx-gen-private-key
 
-LABEL org.opencontainers.image.source=https://github.com/opacitynetwork/opacity-server
-LABEL org.opencontainers.image.description="An implementation of the opacity node in Rust."
+LABEL org.opencontainers.image.source=https://github.com/OpacityLabs/opacity-avs-node
+LABEL org.opencontainers.image.description="An implementation of the opacity avs node in Rust."
 EXPOSE 7047
 CMD ["/opacity-avs-node/start-node.sh"]
