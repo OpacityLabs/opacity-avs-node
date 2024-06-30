@@ -1,4 +1,4 @@
-FROM gramineproject/gramine:latest as gramine
+FROM gramineproject/gramine:v1.5 as gramine
 
 
 
@@ -39,7 +39,7 @@ RUN cargo build --release
 RUN ./generate_notary_keys.sh
 RUN make SGX=1
 
-FROM gramineproject/gramine:latest as final
+FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
