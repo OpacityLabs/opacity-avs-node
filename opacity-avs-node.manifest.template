@@ -1,15 +1,14 @@
 [loader]
 entrypoint = "file:/usr/lib/x86_64-linux-gnu/gramine/libsysdb.so"
-log_level = "error"
 argv = [
-    "gramine-ratls",
-    "/tmp/crt.pem",
-    "/tmp/key.pem",
-    "--",
     "target/release/opacity-avs-node",
     "--config-file",
     "config/config.yaml",
 ]
+log_level = "error"
+uid = 65534
+gid = 65534
+
 
 [loader.env]
 LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu"
