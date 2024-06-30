@@ -55,13 +55,13 @@ pub async fn run_server(config: &NotaryServerProperties) -> Result<(), NotarySer
     } else {
         let tls_private_key_path = config
             .tls
-            .certificate_pem_path
+            .private_key_pem_path
             .as_ref()
             .ok_or_else(|| eyre!("TLS certificate path is not provided"))?;
 
         let tls_certificate_path = config
             .tls
-            .private_key_pem_path
+            .certificate_pem_path
             .as_ref()
             .ok_or_else(|| eyre!("TLS private key pem path is not provided"))?;
 

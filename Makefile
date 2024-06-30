@@ -1,6 +1,6 @@
 ARCH_LIBDIR ?= /lib/$(shell $(CC) -dumpmachine)
 
-SELF_EXE = target/release/opacity-avs-node
+SELF_EXE = /opacity-avs-node/target/release/opacity-avs-node
 
 .PHONY: all
 all: $(SELF_EXE) opacity-avs-node.manifest
