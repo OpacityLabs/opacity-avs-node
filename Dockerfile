@@ -1,4 +1,4 @@
-FROM gramineproject/gramine:v1.5 as gramine
+FROM gramineproject/gramine:latest as gramine
 
 
 
@@ -38,8 +38,14 @@ RUN rm go1.21.0.linux-amd64.tar.gz
 RUN cargo build --release
 RUN ./generate_notary_keys.sh
 RUN make SGX=1
+RUN mv ./target/release/opacity-avs-node .
+RUN cargo clean
+RUN mkdir -p target
+RUN mkdir -p target/release
+RUN mv ./opacity-avs-node ./target/release/opacity-avs-node
 
-FROM gramineproject/gramine:v1.5 as final
+
+FROM gramineproject/gramine:latest as final
 WORKDIR /opacity-avs-node
 COPY --from=gramine /opacity-avs-node /opacity-avs-node
 
