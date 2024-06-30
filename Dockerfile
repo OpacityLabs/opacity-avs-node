@@ -36,6 +36,7 @@ RUN rm go1.21.0.linux-amd64.tar.gz
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 # ENV RA_CLIENT_LINKABLE=1
 RUN cargo build --release
+RUN ./generate_notary_keys.sh
 RUN make SGX=1
 
 FROM gramineproject/gramine:v1.5 as final
