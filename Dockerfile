@@ -1,4 +1,4 @@
-FROM gramineproject/gramine:v1.5 as gramine
+FROM gramineproject/gramine:latest as gramine
 
 
 
@@ -37,8 +37,6 @@ RUN rm go1.21.0.linux-amd64.tar.gz
 # ENV RA_CLIENT_LINKABLE=1
 RUN cargo build --release
 RUN make SGX=1
-RUN mv ./target/release/opacity-avs-node .
-RUN cargo clean
 
 FROM gramineproject/gramine:v1.5 as final
 WORKDIR /opacity-avs-node

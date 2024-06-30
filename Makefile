@@ -11,7 +11,7 @@ endif
 ifeq ($(DEBUG),1)
 GRAMINE_LOG_LEVEL = debug
 else
-GRAMINE_LOG_LEVEL = error
+GRAMINE_LOG_LEVEL = debug
 endif
 
 # Note that we're compiling in release mode regardless of the DEBUG setting passed
