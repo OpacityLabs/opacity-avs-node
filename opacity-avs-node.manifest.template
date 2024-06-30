@@ -1,13 +1,13 @@
 [loader]
 entrypoint = "file:/usr/lib/x86_64-linux-gnu/gramine/libsysdb.so"
-argv = [
-    "target/release/opacity-avs-node",
-    "--config-file",
-    "config/config.yaml",
-]
 log_level = "error"
 uid = 65534
 gid = 65534
+argv = [    
+    "target/release/opacity-avs-node",
+    "--config-file",
+    "config/config.yaml"
+]
 
 
 [loader.env]
@@ -23,6 +23,7 @@ mounts = [
     { path = "/lib", uri = "file:/usr/lib/x86_64-linux-gnu/gramine/runtime/glibc" },
     { path = "/lib/x86_64-linux-gnu", uri = "file:/lib/x86_64-linux-gnu" },
     { path = "/var/config/", uri = "file:config" },
+    { path = "/var/fixture/", uri = "file:fixture" },
     { path = "/var/fixture/", uri = "file:fixture" },
 ]
 
@@ -60,4 +61,4 @@ require_pkru = false
 require_amx = false
 require_exinfo = false
 enable_stats = false
-enclave_size = "512M"
+enclave_size = "4G"
