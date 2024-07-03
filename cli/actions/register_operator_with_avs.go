@@ -15,10 +15,10 @@ import (
 	contractRegistryCoordinator "github.com/Layr-Labs/eigensdk-go/contracts/bindings/RegistryCoordinator"
 	"github.com/Layr-Labs/eigensdk-go/crypto/bls"
 	sdkecdsa "github.com/Layr-Labs/eigensdk-go/crypto/ecdsa"
+	sdktypes "github.com/Layr-Labs/eigensdk-go/types"
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
 	contractDelegationManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/DelegationManager"
-	contractOpacityServiceManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/OpacityServiceManager"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -159,11 +159,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		return err
 	}
 
-	opacityServiceContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
+	// opacityServiceContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// 	return err
+	// }
 
 	// Check if operator registered to EigenLayer
 	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
@@ -266,17 +266,17 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 		fmt.Println("Registering Operator to AVS", pubkeyRegParams)
 
-		// quorumNumbers := sdktypes.QuorumNums{0}
+		quorumNumbers := sdktypes.QuorumNums{0}
 
-		res, err := opacityServiceContract.RegisterOperatorToAVS(auth, operatorAddress, contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry(operatorSignatureWithSaltAndExpiry))
+		// res, err := opacityServiceContract.RegisterOperatorToAVS(auth, operatorAddress, contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry(operatorSignatureWithSaltAndExpiry))
 
-		// res, err := registryCoordinatorContract.RegisterOperator(
-		// 	auth,
-		// 	quorumNumbers.UnderlyingType(),
-		// 	nodeConfig.NodePublicIP,
-		// 	pubkeyRegParams,
-		// 	operatorSignatureWithSaltAndExpiry,
-		// )
+		res, err := registryCoordinatorContract.RegisterOperator(
+			auth,
+			quorumNumbers.UnderlyingType(),
+			nodeConfig.NodePublicIP,
+			pubkeyRegParams,
+			operatorSignatureWithSaltAndExpiry,
+		)
 		if err != nil {
 			fmt.Println(err)
 			return err
