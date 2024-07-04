@@ -159,12 +159,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		return err
 	}
 
-	// opacityServiceContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	return err
-	// }
-
 	// Check if operator registered to EigenLayer
 	isOperatorRegistered, err := delegationManagerContract.IsOperator(nil, operatorAddress)
 	if err != nil {
@@ -244,7 +238,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		auth.Nonce = big.NewInt(int64(nonce))
 		auth.Value = big.NewInt(0)      // in wei
 		auth.GasLimit = uint64(1500000) // in units
-		auth.GasPrice = gasPrice.Add(gasPrice, gasPrice)
+		auth.GasPrice = gasPrice
 
 		g1HashedMsgToSign, err := registryCoordinatorContract.PubkeyRegistrationMessageHash(nil, operatorAddress)
 		if err != nil {
@@ -267,8 +261,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		fmt.Println("Registering Operator to AVS", pubkeyRegParams)
 
 		quorumNumbers := sdktypes.QuorumNums{0}
-
-		// res, err := opacityServiceContract.RegisterOperatorToAVS(auth, operatorAddress, contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry(operatorSignatureWithSaltAndExpiry))
 
 		res, err := registryCoordinatorContract.RegisterOperator(
 			auth,

@@ -1,7 +1,5 @@
 FROM gramineproject/gramine:latest as gramine
 
-
-
 RUN apt-get update && apt-get install -y --no-install-recommends \
   pkg-config \
   libssl-dev \
@@ -12,8 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opacity-avs-node
 COPY . .
-RUN rm ./bin/avs-cli
-RUN rm ./bin/eigenlayer
+RUN mkdir bin
 
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
