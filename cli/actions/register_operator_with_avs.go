@@ -242,8 +242,8 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		}
 
 		auth.Nonce = big.NewInt(int64(nonce))
-		auth.Value = big.NewInt(0)     // in wei
-		auth.GasLimit = uint64(900000) // in units
+		auth.Value = big.NewInt(0)      // in wei
+		auth.GasLimit = uint64(1500000) // in units
 		auth.GasPrice = gasPrice.Add(gasPrice, gasPrice)
 
 		g1HashedMsgToSign, err := registryCoordinatorContract.PubkeyRegistrationMessageHash(nil, operatorAddress)
