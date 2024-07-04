@@ -41,11 +41,15 @@ use crate::{
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
     util::parse_csv_file,
+    OperatorProperties,
 };
 
 /// Start a TCP server (with or without TLS) to accept notarization request for both TCP and WebSocket clients
 #[tracing::instrument(skip(config))]
-pub async fn run_server(config: &NotaryServerProperties) -> Result<(), NotaryServerError> {
+pub async fn run_server(
+    config: &NotaryServerProperties,
+    operator: &OperatorProperties,
+) -> Result<(), NotaryServerError> {
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
     // Build TLS acceptor if it is turned on
@@ -115,6 +119,7 @@ pub async fn run_server(config: &NotaryServerProperties) -> Result<(), NotarySer
     let version = env!("CARGO_PKG_VERSION").to_string();
     let git_commit_hash = env!("GIT_COMMIT_HASH").to_string();
     let git_commit_timestamp = env!("GIT_COMMIT_TIMESTAMP").to_string();
+    let git_origin_remote = env!("GIT_ORIGIN_REMOTE").to_string();
 
     // Parameters needed for the root / endpoint
     let html_string = config.server.html_info.clone();
@@ -145,6 +150,7 @@ pub async fn run_server(config: &NotaryServerProperties) -> Result<(), NotarySer
                         public_key,
                         git_commit_hash,
                         git_commit_timestamp,
+                        git_origin_remote,
                     }),
                 )
                     .into_response()

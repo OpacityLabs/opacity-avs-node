@@ -71,3 +71,16 @@ pub struct LoggingProperties {
     /// This will override the default filtering logic above
     pub filter: Option<String>,
 }
+
+/// EigenLayer Operator Configuration
+#[derive(Clone, Debug, Deserialize, Default)]
+pub struct OperatorProperties {
+    pub production: bool,
+    pub registry_coordinator_address: String,
+    pub opacity_avs_address: String,
+    pub avs_directory_address: String,
+    pub eigenlayer_delegation_manager_address: String,
+    pub chain_id: u32,
+    pub eth_rpc_url: String,
+    pub node_public_ip: String,
+}
