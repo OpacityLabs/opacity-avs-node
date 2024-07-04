@@ -36,6 +36,14 @@ var (
 	/* Optional Flags */
 )
 
+const (
+	// ReceiptStatusFailed is the status code of a transaction if execution failed.
+	ReceiptStatusFailed = uint64(0)
+
+	// ReceiptStatusSuccessful is the status code of a transaction if execution succeeded.
+	ReceiptStatusSuccessful = uint64(1)
+)
+
 var (
 	ErrInvalidNumberOfArgs   = errors.New("invalid number of arguments")
 	ErrNoECDSAKeyPassword    = errors.New("ecdsa key password env var not set")
@@ -265,7 +273,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 		quorumNumbers := sdktypes.QuorumNums{0}
 
-		res, err := registryCoordinatorContract.RegisterOperator(
+		tx, err := registryCoordinatorContract.RegisterOperator(
 			auth,
 			quorumNumbers.UnderlyingType(),
 			nodeConfig.NodePublicIP,
@@ -276,7 +284,28 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			fmt.Println(err)
 			return err
 		}
-		fmt.Println("Register Operator to AVS TX:", res.Hash().Hex())
+
+		fmt.Println("Register operator to AVS TX broadcasted")
+		fmt.Println("Etherscan URL: https://etherscan.io/tx/" + tx.Hash().Hex())
+
+		var foundTx bool = false
+
+		for !foundTx {
+			txReceipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+			if err != nil {
+				fmt.Println("Transaction not mined yet")
+				time.Sleep(5 * time.Second)
+			}
+			fmt.Println("Transaction included in block ", txReceipt.BlockNumber)
+			if txReceipt.Status == ReceiptStatusFailed {
+				log.Fatalln("error: transaction reverted, failed to register operator to AVS")
+				return errors.New("error: transaction reverted, failed to register operator to AVS")
+			}
+			if txReceipt.Status == ReceiptStatusSuccessful {
+				foundTx = true
+			}
+		}
+
 		return nil
 
 	} else {
