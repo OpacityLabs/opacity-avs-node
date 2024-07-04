@@ -8,12 +8,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InfoResponse {
-    /// Current version of notary-server
+    /// Current version of opacity-node
     pub version: String,
     /// Public key of the notary signing key
     pub public_key: String,
-    /// Current git commit hash of notary-server
+    /// Current git commit hash of opacity-node
     pub git_commit_hash: String,
-    /// Current git commit timestamp of notary-server
+    /// Current git commit timestamp of opacity-node
     pub git_commit_timestamp: String,
+    /// Current git commit timestamp of opacity-node
+    pub git_origin_remote: String,
 }
