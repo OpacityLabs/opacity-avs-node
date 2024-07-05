@@ -1,3 +1,5 @@
+use ark_bn254::{Bn254, Fq, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
+use ark_ec::{pairing::PairingOutput, AffineRepr, CurveGroup};
 use axum::{
     extract::Request,
     http::StatusCode,
@@ -42,7 +44,7 @@ use crate::{
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
     util::{fetch_operator_metadata, parse_csv_file},
-    wallet::load_oeprator_wallet,
+    wallet::load_oeprator_bls_key,
     OperatorProperties,
 };
 
@@ -55,21 +57,31 @@ pub async fn run_server(
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
 
-    let ecdsa_password = std::env::var("OPERATOR_ECDSA_KEY_PASSWORD").unwrap_or_else(|_| {
-        panic!("Environment variable 'OPERATOR_ECDSA_KEY_PASSWORD' not defined");
+    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
+        panic!("Environment variable 'OPERATOR_BLS_KEY_PASSWORD' not defined");
     });
 
-    let ecdsa_keystore_path = operator
-        .operator_ecdsa_keystore_path
+    let bls_keystore_path = operator
+        .operator_bls_keystore_path
         .clone()
         .unwrap_or_else(|| {
             panic!("operator_ecdsa_keystore_path not set in operator config file");
         });
 
-    let operator_wallet = load_oeprator_wallet(&ecdsa_keystore_path, &ecdsa_password)
-        .unwrap_or_else(|err| {
-            panic!("Unable to decrypt operator wallet: {:?}", err);
+    let operator_address = operator.operator_address.clone().encode_hex_with_prefix();
+
+    let operator_bls_key =
+        load_oeprator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
+            panic!("Unable to decrypt operator BLS keystore: {:?}", err);
         });
+
+    let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
+
+    info!(
+        "Operator BLS key loaded {:?} {:?}",
+        bn254_public_key_g1.x(),
+        bn254_public_key_g1.y()
+    );
 
     // let metadata_response =
     //     fetch_operator_metadata(operator_wallet.address().encode_hex_with_prefix());
@@ -151,10 +163,7 @@ pub async fn run_server(
             .replace("{git_commit_hash}", &git_commit_hash)
             .replace("{git_commit_timestamp}", &git_commit_timestamp)
             .replace("{git_origin_remote}", &git_origin_remote)
-            .replace(
-                "{operator_address}",
-                &operator_wallet.address().encode_hex_with_prefix(),
-            )
+            .replace("{operator_address}", &operator_address)
             .replace("{public_key}", &public_key),
     );
 
@@ -178,7 +187,7 @@ pub async fn run_server(
                         git_commit_hash,
                         git_commit_timestamp,
                         git_origin_remote,
-                        operator_address: operator_wallet.address().encode_hex_with_prefix(),
+                        operator_address: operator_address,
                     }),
                 )
                     .into_response()

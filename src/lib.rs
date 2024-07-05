@@ -1,3 +1,4 @@
+mod bn254;
 mod config;
 mod domain;
 mod error;
@@ -7,7 +8,7 @@ mod server_tracing;
 mod service;
 mod util;
 mod wallet;
-
+pub use bn254::vec_to_fr;
 pub use config::{
     AuthorizationProperties, LoggingProperties, Metadata, NotarizationProperties,
     NotaryServerProperties, NotarySigningKeyProperties, OperatorMetadataResult, OperatorProperties,

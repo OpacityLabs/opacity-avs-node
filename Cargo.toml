@@ -45,7 +45,13 @@ ws_stream_tungstenite = { version = "0.13.0", features = ["tokio_io"] }
 tlsn-verifier = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
 ethers = "2.0.14"
 reqwest = "0.12.5"
-
+eth-bn254-keystore = { git = "https://github.com/OpacityLabs/eth-keystore-rs", branch = "bn254" }
+ark-ff = { version = "0.4.2" }
+ark-bn254 = { version = "0.4.0" }
+ark-std = { version = "0.4.0" }
+ark-ec = { version = "0.4.2" }
+sha2 = { version = "0.10.6" }
+num-bigint = "0.4.5"
 
 [dev-dependencies]
 # specify vendored feature to use statically linked copy of OpenSSL
