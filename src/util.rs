@@ -8,12 +8,14 @@ use crate::{Metadata, OperatorMetadataResult, OperatorProperties};
 pub fn parse_operator_config_file(location: &str) -> Result<OperatorProperties> {
     let mut operator_config: OperatorProperties = parse_config_file(location)?;
     if operator_config.operator_ecdsa_keystore_path.is_none() {
-        operator_config.operator_ecdsa_keystore_path =
-            Some(String::from("/opacity-avs-node/opacity.ecdsa.key.json"));
+        operator_config.operator_ecdsa_keystore_path = Some(String::from(
+            "/opacity-avs-node/config/opacity.ecdsa.key.json",
+        ));
     }
     if operator_config.operator_bls_keystore_path.is_none() {
-        operator_config.operator_bls_keystore_path =
-            Some(String::from("/opacity-avs-node/opacity.bls.key.json"));
+        operator_config.operator_bls_keystore_path = Some(String::from(
+            "/opacity-avs-node/config/opacity.bls.key.json",
+        ));
     }
     Ok(operator_config)
 }
