@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   build-essential \
   lld \
-  wget
+  wget \
+  git
 
 WORKDIR /opacity-avs-node
 COPY . .
