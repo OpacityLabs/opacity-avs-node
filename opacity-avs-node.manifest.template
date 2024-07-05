@@ -39,6 +39,7 @@ trusted_files = [
 ]
 allowed_files = [
     "file:config/config.yaml",
+    "file:config/opacity.config.yaml",
     "file:config/opacity.ecdsa.key.json",
     "file:fixture/notary/notary.key",
     "file:fixture/notary/notary.pub",
