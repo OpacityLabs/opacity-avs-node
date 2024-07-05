@@ -1,6 +1,6 @@
 use ethers::{
-    core::k256::{ecdsa::SigningKey, Secp256k1},
-    signers::{LocalWallet, Signer, Wallet},
+    core::k256::{ecdsa::SigningKey},
+    signers::{LocalWallet, Wallet},
 };
 
 pub fn load_oeprator_wallet(

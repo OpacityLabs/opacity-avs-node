@@ -1,8 +1,4 @@
-use std::collections::HashMap;
-
 use eyre::Result;
-use reqwest::Client;
-use reqwest::Error;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use serde_json;
@@ -41,13 +37,14 @@ pub fn parse_csv_file<T: DeserializeOwned>(location: &str) -> Result<Vec<T>> {
     Ok(table)
 }
 
-pub async fn fetch_operator_metadata() -> Result<Metadata> {
-    let response = reqwest::get("https://jsonplaceholder.typicode.com/posts/1")
+pub async fn fetch_operator_metadata(address: String) -> Result<Metadata> {
+    let response = reqwest::get(format!("https://app.eigenlayer.xyz/api/trpc/operator.getOperatorSummary?batch=1&input=%7B%220%22%3A%7B%22json%22%3A%7B%22address%22%3A%22{address}%22%7D%7D%7D"))
         .await?
         .text()
         .await?;
     let metadata: Vec<OperatorMetadataResult> = serde_json::from_str(&response)?;
     let metadata = metadata.get(0).unwrap();
+    println!("{:?}", metadata.result.data.clone());
     Ok(metadata.result.data.clone())
 }
 
