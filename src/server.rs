@@ -57,7 +57,9 @@ pub async fn run_server(
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
 
-    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap();
+    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
+        panic!("OPERATOR_BLS_KEY_PASSWORD not set in environment variable");
+    });
 
     let bls_keystore_path = operator
         .operator_bls_keystore_path
