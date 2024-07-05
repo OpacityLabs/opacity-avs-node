@@ -18,7 +18,9 @@ futures-util = "0.3.28"
 http = "1.1"
 hyper = { version = "1.1", features = ["client", "http1"] }
 hyper-util = { version = "0.1", features = ["full"] }
-notify = { version = "6.1.1", default-features = false, features = ["macos_kqueue"] }
+notify = { version = "6.1.1", default-features = false, features = [
+    "macos_kqueue",
+] }
 opentelemetry = { version = "0.19" }
 p256 = { version = "0.13", features = ["ecdh", "serde"] }
 rstest = "0.18"
@@ -40,16 +42,16 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 ws_stream_tungstenite = { version = "0.13.0", features = ["tokio_io"] }
-tlsn-verifier= { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
+tlsn-verifier = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
 ethers = "2.0.14"
-
+reqwest = "0.12.5"
 
 
 [dev-dependencies]
 # specify vendored feature to use statically linked copy of OpenSSL
 hyper-tls = { version = "0.5.0", features = ["vendored"] }
-tlsn-prover = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-prover"}
-tls-server-fixture = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tls-server-fixture"}
+tlsn-prover = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-prover" }
+tls-server-fixture = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tls-server-fixture" }
 tls-core = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-tls-core" }
 notary-client = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "notary-client" }
 tokio-native-tls = { version = "0.3.1", features = ["vendored"] }

@@ -1,7 +1,13 @@
-use eyre::Result;
-use serde::de::DeserializeOwned;
+use std::collections::HashMap;
 
-use crate::OperatorProperties;
+use eyre::Result;
+use reqwest::Client;
+use reqwest::Error;
+use serde::de::DeserializeOwned;
+use serde::Deserialize;
+use serde_json;
+
+use crate::{Metadata, OperatorMetadataResult, OperatorProperties};
 
 pub fn parse_operator_config_file(location: &str) -> Result<OperatorProperties> {
     let mut operator_config: OperatorProperties = parse_config_file(location)?;
@@ -33,6 +39,16 @@ pub fn parse_csv_file<T: DeserializeOwned>(location: &str) -> Result<Vec<T>> {
         table.push(record);
     }
     Ok(table)
+}
+
+pub async fn fetch_operator_metadata() -> Result<Metadata> {
+    let response = reqwest::get("https://jsonplaceholder.typicode.com/posts/1")
+        .await?
+        .text()
+        .await?;
+    let metadata: Vec<OperatorMetadataResult> = serde_json::from_str(&response)?;
+    let metadata = metadata.get(0).unwrap();
+    Ok(metadata.result.data.clone())
 }
 
 #[cfg(test)]
