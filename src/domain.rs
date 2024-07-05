@@ -18,4 +18,6 @@ pub struct InfoResponse {
     pub git_commit_timestamp: String,
     /// Current git commit timestamp of opacity-node
     pub git_origin_remote: String,
+    /// Address of the opacity-node
+    pub operator_address: String,
 }

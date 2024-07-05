@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use structopt::StructOpt;
 
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
@@ -79,8 +80,10 @@ pub struct OperatorProperties {
     pub registry_coordinator_address: String,
     pub opacity_avs_address: String,
     pub avs_directory_address: String,
-    pub eigenlayer_delegation_manager_address: String,
+    pub eigenlayer_delegation_manager: String,
     pub chain_id: u32,
     pub eth_rpc_url: String,
     pub node_public_ip: String,
+    pub operator_ecdsa_keystore_path: Option<String>,
+    pub operator_bls_keystore_path: Option<String>,
 }

@@ -6,6 +6,7 @@ mod server;
 mod server_tracing;
 mod service;
 mod util;
+mod wallet;
 
 pub use config::{
     AuthorizationProperties, LoggingProperties, NotarizationProperties, NotaryServerProperties,
@@ -18,4 +19,4 @@ pub use domain::{
 pub use error::NotaryServerError;
 pub use server::{read_pem_file, run_server};
 pub use server_tracing::init_tracing;
-pub use util::parse_config_file;
+pub use util::{parse_config_file, parse_operator_config_file};

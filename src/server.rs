@@ -6,6 +6,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
+use ethers::{signers::Signer, utils::hex::ToHexExt};
 use eyre::{ensure, eyre, Result};
 use futures_util::future::poll_fn;
 use hyper::{body::Incoming, server::conn::http1};
@@ -41,6 +42,7 @@ use crate::{
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
     util::parse_csv_file,
+    wallet::load_oeprator_wallet,
     OperatorProperties,
 };
 
@@ -52,6 +54,22 @@ pub async fn run_server(
 ) -> Result<(), NotaryServerError> {
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
+
+    let ecdsa_password = std::env::var("OPERATOR_ECDSA_KEY_PASSWORD").unwrap_or_else(|_| {
+        panic!("Environment variable 'OPERATOR_ECDSA_KEY_PASSWORD' not defined");
+    });
+
+    let ecdsa_keystore_path = operator
+        .operator_ecdsa_keystore_path
+        .clone()
+        .unwrap_or_else(|| {
+            panic!("operator_ecdsa_keystore_path not set in operator config file");
+        });
+
+    let operator_wallet = load_oeprator_wallet(&ecdsa_keystore_path, &ecdsa_password)
+        .unwrap_or_else(|err| {
+            panic!("Unable to decrypt operator wallet: {:?}", err);
+        });
     // Build TLS acceptor if it is turned on
     let tls_acceptor = if !config.tls.enabled {
         debug!("Skipping TLS setup as it is turned off.");
@@ -128,6 +146,11 @@ pub async fn run_server(
             .replace("{version}", &version)
             .replace("{git_commit_hash}", &git_commit_hash)
             .replace("{git_commit_timestamp}", &git_commit_timestamp)
+            .replace("{git_origin_remote}", &git_origin_remote)
+            .replace(
+                "{operator_address}",
+                &operator_wallet.address().encode_hex_with_prefix(),
+            )
             .replace("{public_key}", &public_key),
     );
 
@@ -151,6 +174,7 @@ pub async fn run_server(
                         git_commit_hash,
                         git_commit_timestamp,
                         git_origin_remote,
+                        operator_address: operator_wallet.address().encode_hex_with_prefix(),
                     }),
                 )
                     .into_response()
