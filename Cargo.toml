@@ -41,6 +41,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 ws_stream_tungstenite = { version = "0.13.0", features = ["tokio_io"] }
 tlsn-verifier= { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
+ethers = "2.0.14"
 
 
 
