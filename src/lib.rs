@@ -9,8 +9,9 @@ mod util;
 mod wallet;
 
 pub use config::{
-    AuthorizationProperties, LoggingProperties, NotarizationProperties, NotaryServerProperties,
-    NotarySigningKeyProperties, OperatorProperties, ServerProperties, TLSProperties,
+    AuthorizationProperties, LoggingProperties, Metadata, NotarizationProperties,
+    NotaryServerProperties, NotarySigningKeyProperties, OperatorMetadataResult, OperatorProperties,
+    ServerProperties, TLSProperties,
 };
 pub use domain::{
     cli::CliFields,
