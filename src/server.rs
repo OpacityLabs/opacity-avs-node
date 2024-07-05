@@ -44,7 +44,7 @@ use crate::{
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
     util::{fetch_operator_metadata, parse_csv_file},
-    wallet::load_oeprator_bls_key,
+    wallet::load_operator_bls_key,
     OperatorProperties,
 };
 
@@ -71,7 +71,7 @@ pub async fn run_server(
     let operator_address = operator.operator_address.clone().encode_hex_with_prefix();
 
     let operator_bls_key =
-        load_oeprator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
+        load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
             panic!("Unable to decrypt operator BLS keystore: {:?}", err);
         });
 

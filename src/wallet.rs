@@ -7,7 +7,7 @@ use ethers::{
 
 use crate::vec_to_fr;
 
-pub fn load_oeprator_bls_key(
+pub fn load_operator_bls_key(
     bls_key_path: &String,
     password: &String,
 ) -> Result<Fp<MontBackend<FrConfig, 4>, 4>, Box<dyn std::error::Error>> {
