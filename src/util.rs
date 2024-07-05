@@ -13,7 +13,7 @@ pub fn parse_operator_config_file(location: &str) -> Result<OperatorProperties> 
     // }
     if operator_config.operator_bls_keystore_path.is_none() {
         operator_config.operator_bls_keystore_path =
-            Some(String::from("/opacity-avs-node/opacity.bls.key.json"));
+            Some(String::from("config/opacity.bls.key.json"));
     }
     Ok(operator_config)
 }

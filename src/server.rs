@@ -1,4 +1,4 @@
-use ark_bn254::{G1Affine};
+use ark_bn254::G1Affine;
 use ark_ec::{AffineRepr, CurveGroup};
 use axum::{
     extract::Request,
@@ -8,7 +8,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use ethers::{utils::hex::ToHexExt};
+use ethers::utils::hex::ToHexExt;
 use eyre::{ensure, eyre, Result};
 use futures_util::future::poll_fn;
 use hyper::{body::Incoming, server::conn::http1};
@@ -43,7 +43,7 @@ use crate::{
     error::NotaryServerError,
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
-    util::{parse_csv_file},
+    util::parse_csv_file,
     wallet::load_operator_bls_key,
     OperatorProperties,
 };
@@ -57,9 +57,7 @@ pub async fn run_server(
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
 
-    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
-        panic!("Environment variable 'OPERATOR_BLS_KEY_PASSWORD' not defined");
-    });
+    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap();
 
     let bls_keystore_path = operator
         .operator_bls_keystore_path
