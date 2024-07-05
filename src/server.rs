@@ -1,5 +1,5 @@
-use ark_bn254::{Bn254, Fq, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
-use ark_ec::{pairing::PairingOutput, AffineRepr, CurveGroup};
+use ark_bn254::{G1Affine};
+use ark_ec::{AffineRepr, CurveGroup};
 use axum::{
     extract::Request,
     http::StatusCode,
@@ -8,7 +8,7 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use ethers::{signers::Signer, utils::hex::ToHexExt};
+use ethers::{utils::hex::ToHexExt};
 use eyre::{ensure, eyre, Result};
 use futures_util::future::poll_fn;
 use hyper::{body::Incoming, server::conn::http1};
@@ -43,7 +43,7 @@ use crate::{
     error::NotaryServerError,
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
-    util::{fetch_operator_metadata, parse_csv_file},
+    util::{parse_csv_file},
     wallet::load_operator_bls_key,
     OperatorProperties,
 };

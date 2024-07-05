@@ -1,9 +1,5 @@
 use ark_bn254::FrConfig;
 use ark_ff::{Fp, MontBackend};
-use ethers::{
-    core::k256::ecdsa::SigningKey,
-    signers::{LocalWallet, Wallet},
-};
 
 use crate::vec_to_fr;
 
