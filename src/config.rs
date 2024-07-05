@@ -1,5 +1,4 @@
 use serde::Deserialize;
-use structopt::StructOpt;
 
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]

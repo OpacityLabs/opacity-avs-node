@@ -41,7 +41,7 @@ use crate::{
     error::NotaryServerError,
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
-    util::parse_csv_file,
+    util::{fetch_operator_metadata, parse_csv_file},
     wallet::load_oeprator_wallet,
     OperatorProperties,
 };
@@ -70,6 +70,10 @@ pub async fn run_server(
         .unwrap_or_else(|err| {
             panic!("Unable to decrypt operator wallet: {:?}", err);
         });
+
+    // let metadata_response =
+    //     fetch_operator_metadata(operator_wallet.address().encode_hex_with_prefix());
+
     // Build TLS acceptor if it is turned on
     let tls_acceptor = if !config.tls.enabled {
         debug!("Skipping TLS setup as it is turned off.");
