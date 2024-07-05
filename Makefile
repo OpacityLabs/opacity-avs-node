@@ -76,11 +76,11 @@ distclean: clean
 
 .PHONY: docker-build
 docker-build:
-	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:mainnet
+	docker build . --tag opacitylabseulerlagrange/opacity-avs-node:mainnet-p2p
 
 .PHONY: docker-push
 docker-push:
-	docker push opacitylabseulerlagrange/opacity-avs-node:mainnet
+	docker push opacitylabseulerlagrange/opacity-avs-node:mainnet-p2p
 
 
 register-opacity-node:
