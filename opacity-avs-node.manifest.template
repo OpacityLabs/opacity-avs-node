@@ -25,6 +25,7 @@ mounts = [
     { path = "/var/config/", uri = "file:config" },
     { path = "/var/fixture/", uri = "file:fixture" },
     { path = "/var/fixture/", uri = "file:fixture" },
+    { path = "/opacity-avs-node", uri = "file:/opacity-avs-node" },
 ]
 
 [sgx]
@@ -49,6 +50,7 @@ allowed_files = [
     "file:fixture/tls/rootCA.key",
     "file:fixture/tls/rootCA.pem",
     "file:fixture/tls/rootCA.srl",
+    "file:/opacity-avs-node/opacity.bls.key.json",
 
 ]
 max_threads = 16
