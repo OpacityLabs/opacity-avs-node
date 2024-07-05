@@ -6,12 +6,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   build-essential \
   lld \
-  wget
+  wget \
+  git
 
 WORKDIR /opacity-avs-node
 COPY . .
 RUN mkdir bin
-
+RUN git status
+RUN exit
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
