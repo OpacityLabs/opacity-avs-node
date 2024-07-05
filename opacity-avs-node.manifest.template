@@ -14,6 +14,7 @@ argv = [
 LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu"
 MALLOC_ARENA_MAX = "1"
 RUST_BACKTRACE = "full"
+OPERATOR_ECDSA_KEY_PASSWORD = { passthrough = true }
 
 [libos]
 entrypoint = "target/release/opacity-avs-node"
@@ -38,6 +39,7 @@ trusted_files = [
 ]
 allowed_files = [
     "file:config/config.yaml",
+    "file:config/opacity.ecdsa.key.json",
     "file:fixture/notary/notary.key",
     "file:fixture/notary/notary.pub",
     "file:fixture/tls/notary.crt",
