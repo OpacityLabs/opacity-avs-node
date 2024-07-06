@@ -42,7 +42,7 @@ use crate::{
     error::NotaryServerError,
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
-    util::{fetch_operator_metadata, parse_csv_file},
+    util::{parse_csv_file},
     wallet::load_operator_bls_key,
     OperatorProperties,
 };
