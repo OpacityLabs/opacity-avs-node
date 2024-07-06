@@ -1,8 +1,8 @@
 mkdir -p fixture/notary
 
 # Root certificate
-openssl req -newkey rsa:2048 -nodes -keyout fixture/tls/rootCA.key -x509 -days 365 -out fixture/tls/rootCA.crt -subj "/C=US/ST=L1/L=EigenLayer/O=Opacity/CN=OpacityNetwork" 2>/dev/null
-openssl req -x509 -sha256 -new -nodes -key fixture/tls/rootCA.key -days 3650 -out fixture/tls/rootCA.pem -subj "/C=US/ST=L1/L=EigenLayer/O=Opacity/CN=OpacityNetwork" 2>/dev/null
+# openssl req -newkey rsa:2048 -nodes -keyout fixture/tls/rootCA.key -x509 -days 365 -out fixture/tls/rootCA.crt -subj "/C=US/ST=L1/L=EigenLayer/O=Opacity/CN=OpacityNetwork" 2>/dev/null
+# openssl req -x509 -sha256 -new -nodes -key fixture/tls/rootCA.key -days 3650 -out fixture/tls/rootCA.pem -subj "/C=US/ST=L1/L=EigenLayer/O=Opacity/CN=OpacityNetwork" 2>/dev/null
 
 
 # Notary certificate
