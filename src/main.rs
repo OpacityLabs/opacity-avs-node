@@ -3,8 +3,9 @@ use structopt::StructOpt;
 use tracing::debug;
 
 use opacity_avs_node::{
-    init_tracing, parse_config_file, parse_operator_config_file, run_server, CliFields,
-    NotaryServerError, NotaryServerProperties, OperatorProperties,
+    init_tracing, parse_config_file, parse_operator_config_file, run_server,
+    validate_operator_config, CliFields, NotaryServerError, NotaryServerProperties,
+    OperatorProperties,
 };
 
 #[tokio::main]
@@ -15,6 +16,9 @@ async fn main() -> Result<(), NotaryServerError> {
     let operator_config: OperatorProperties =
         parse_operator_config_file(&cli_fields.operator_config_file)?;
 
+    validate_operator_config(&operator_config).unwrap_or_else(|err| {
+        panic!("Invalid operator config: {}", err);
+    });
     // Set up tracing for logging
     init_tracing(&notary_config).map_err(|err| eyre!("Failed to set up tracing: {err}"))?;
     debug!("Opacity node config loaded");

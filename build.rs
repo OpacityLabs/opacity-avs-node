@@ -18,7 +18,7 @@ fn get_git_commit_info() -> (String, String) {
     (commit_hash.to_string(), commit_timestamp.to_string())
 }
 
-fn get_git_remote_info() -> (String) {
+fn get_git_remote_info() -> String {
     // Used to extract latest HEAD commit hash and timestamp for the /info endpoint
     let output = Command::new("git")
         .args(["remote", "get-url", "origin"])
