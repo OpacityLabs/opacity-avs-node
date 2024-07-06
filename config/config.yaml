@@ -8,8 +8,9 @@ server:
     <li>git commit hash: <a href="https://github.com/OpacityLabs/opacity-avs-node/commit/{git_commit_hash}">{git_commit_hash}</a></li>
     <li>git commit timestamp: {git_commit_timestamp}</li>
     <li>git commit timestamp: {git_origin_remote}</li>
-    <li>operator address: <a href="https://app.eigenlayer.xyz/operator/{operator_address}">{operator_address}</li></a>
-    <li>public key: <pre>{public_key}</pre></li>
+    <li>operator address: <a href="https://app.eigenlayer.xyz/operator/{operator_address}">{operator_address}</a></li>
+    <li>operator BLS public key: <pre>{operator_bls_public_key}</pre></li>
+    <li>Notary public key: <pre>{public_key}</pre></li>
     </ul>
     <a href="/healthcheck">health check</a> - <a href="/info">info</a><br/>
 

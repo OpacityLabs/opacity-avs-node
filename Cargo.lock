@@ -125,6 +125,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f538837af36e6f6a9be0faa67f9a314f8119e4e4b5867c6ab40ed60360142519"
 
 [[package]]
+name = "ark-bn254"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a22f4561524cd949590d78d7d4c5df8f592430d221f7f3c9497bbafd8972120f"
+dependencies = [
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
+]
+
+[[package]]
 name = "ark-ec"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -773,6 +784,19 @@ dependencies = [
  "futures-io",
  "futures-lite 2.3.0",
  "piper",
+]
+
+[[package]]
+name = "bn254"
+version = "0.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7694a2df5ffc5f2e385503b2987d281abeb80e02f3c30acd7de0d3db18794e73"
+dependencies = [
+ "byteorder",
+ "rand",
+ "sha2",
+ "substrate-bn",
+ "thiserror",
 ]
 
 [[package]]
@@ -1624,6 +1648,28 @@ checksum = "a258e46cdc063eb8519c00b9fc845fc47bcfca4130e2f08e88665ceda8474245"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "eth-bn254-keystore"
+version = "0.5.0"
+source = "git+https://github.com/OpacityLabs/eth-keystore-rs?branch=bn254#70d0ae120b58faca261a554916de701c0a46351f"
+dependencies = [
+ "aes 0.8.4",
+ "bn254",
+ "ctr 0.9.2",
+ "digest 0.10.7",
+ "hex",
+ "hmac",
+ "pbkdf2 0.11.0",
+ "rand",
+ "scrypt",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sha3",
+ "thiserror",
+ "uuid 1.8.0",
 ]
 
 [[package]]
@@ -3010,6 +3056,9 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
+dependencies = [
+ "spin 0.5.2",
+]
 
 [[package]]
 name = "lazycell"
@@ -3600,11 +3649,10 @@ dependencies = [
 
 [[package]]
 name = "num-bigint"
-version = "0.4.4"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "608e7659b5c3d7cba262d894801b9ec9d00de989e8a82bd4bef91d08da45cdc0"
+checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
 dependencies = [
- "autocfg",
  "num-integer",
  "num-traits",
 ]
@@ -3684,6 +3732,10 @@ checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 name = "opacity-avs-node"
 version = "0.0.1"
 dependencies = [
+ "ark-bn254",
+ "ark-ec",
+ "ark-ff",
+ "ark-std",
  "async-trait",
  "async-tungstenite 0.25.1",
  "axum",
@@ -3692,6 +3744,7 @@ dependencies = [
  "base64 0.21.7",
  "chrono",
  "csv",
+ "eth-bn254-keystore",
  "ethers",
  "eyre",
  "futures",
@@ -3703,6 +3756,7 @@ dependencies = [
  "hyper-util",
  "notary-client",
  "notify",
+ "num-bigint",
  "opentelemetry",
  "p256",
  "reqwest 0.12.5",
@@ -3713,6 +3767,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha1",
+ "sha2",
  "structopt",
  "thiserror",
  "tls-server-fixture",
@@ -3728,6 +3783,7 @@ dependencies = [
  "tower-service",
  "tracing",
  "tracing-subscriber",
+ "urlencoding",
  "uuid 1.8.0",
  "ws_stream_tungstenite",
 ]
@@ -5390,6 +5446,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b5bbfa79abbae15dd642ea8176a21a635ff3c00059961d1ea27ad04e5b441c"
+dependencies = [
+ "byteorder",
+ "crunchy",
+ "lazy_static",
+ "rand",
+ "rustc-hex",
+]
+
+[[package]]
 name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6508,6 +6577,7 @@ checksum = "a183cf7feeba97b4dd1c0d46788634f6221d87fa961b305bed08c851829efcc0"
 dependencies = [
  "getrandom",
  "rand",
+ "serde",
 ]
 
 [[package]]

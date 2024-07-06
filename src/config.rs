@@ -83,37 +83,9 @@ pub struct OperatorProperties {
     pub chain_id: u32,
     pub eth_rpc_url: String,
     pub node_public_ip: String,
+    pub operator_address: String,
     pub operator_ecdsa_keystore_path: Option<String>,
     pub operator_bls_keystore_path: Option<String>,
-}
-
-// [
-//     {
-//         "result": {
-//             "data": {
-//                 "json": {
-//                     "name": "EulerLagrange",
-//                     "website": "https://warpcast.com/eulerlagrange.eth",
-//                     "description": "EulerLagrange's node",
-//                     "logo": "https://prod-usea1-mainnet-operator-metadata.s3.amazonaws.com/0xaa280fdb50391fb63458fee1b484be2f36ce990b/logo.png",
-//                     "twitter": "https://twitter.com/Euler__Lagrange",
-//                     "address": "0xaa280fdb50391fb63458fee1b484be2f36ce990b",
-//                     "numStakers": 2,
-//                     "shares": [
-//                         {
-//                             "0x93c4b944d05dfe6df7645a86cd2206016c51564d": "96040946218139731"
-//                         }
-//                     ]
-//                 }
-//             }
-//         }
-//     }
-// ]
-#[derive(Clone, Debug, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct Shares {
-    pub address: String,
-    pub amount: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Default)]
@@ -125,14 +97,19 @@ pub struct Metadata {
     pub logo: String,
     pub twitter: String,
     pub address: String,
-    pub num_stakes: u32,
-    pub shares: Vec<Shares>,
+    pub num_stakers: u32,
+}
+
+#[derive(Clone, Debug, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ResultJSON {
+    pub json: Metadata,
 }
 
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ResultData {
-    pub data: Metadata,
+    pub data: ResultJSON,
 }
 
 #[derive(Clone, Debug, Deserialize, Default)]

@@ -1,3 +1,5 @@
+use ark_bn254::G1Affine;
+use ark_ec::{AffineRepr, CurveGroup};
 use axum::{
     extract::Request,
     http::StatusCode,
@@ -6,7 +8,6 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use ethers::{signers::Signer, utils::hex::ToHexExt};
 use eyre::{ensure, eyre, Result};
 use futures_util::future::poll_fn;
 use hyper::{body::Incoming, server::conn::http1};
@@ -42,39 +43,41 @@ use crate::{
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
     util::{fetch_operator_metadata, parse_csv_file},
-    wallet::load_oeprator_wallet,
+    wallet::load_operator_bls_key,
     OperatorProperties,
 };
 
 /// Start a TCP server (with or without TLS) to accept notarization request for both TCP and WebSocket clients
-#[tracing::instrument(skip(config))]
+#[tracing::instrument(skip(config, operator))]
 pub async fn run_server(
     config: &NotaryServerProperties,
     operator: &OperatorProperties,
 ) -> Result<(), NotaryServerError> {
     // Load the private key for notarized transcript signing
     let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
+    let operator_address = operator.operator_address.clone();
 
-    let ecdsa_password = std::env::var("OPERATOR_ECDSA_KEY_PASSWORD").unwrap_or_else(|_| {
-        panic!("Environment variable 'OPERATOR_ECDSA_KEY_PASSWORD' not defined");
+    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
+        panic!("OPERATOR_BLS_KEY_PASSWORD not set in environment variable");
     });
 
-    let ecdsa_keystore_path = operator
-        .operator_ecdsa_keystore_path
+    let bls_keystore_path = operator
+        .operator_bls_keystore_path
         .clone()
         .unwrap_or_else(|| {
             panic!("operator_ecdsa_keystore_path not set in operator config file");
         });
 
-    let operator_wallet = load_oeprator_wallet(&ecdsa_keystore_path, &ecdsa_password)
-        .unwrap_or_else(|err| {
-            panic!("Unable to decrypt operator wallet: {:?}", err);
+    let operator_bls_key =
+        load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
+            panic!("Unable to decrypt operator BLS keystore: {:?}", err);
         });
 
-    // let metadata_response =
-    //     fetch_operator_metadata(operator_wallet.address().encode_hex_with_prefix());
+    let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
 
-    // Build TLS acceptor if it is turned on
+    info!("Operator BLS key loaded {:?}", bn254_public_key_g1);
+
+    // Build TLS acceptor if it is turned on``
     let tls_acceptor = if !config.tls.enabled {
         debug!("Skipping TLS setup as it is turned off.");
         None
@@ -143,6 +146,8 @@ pub async fn run_server(
     let git_commit_timestamp = env!("GIT_COMMIT_TIMESTAMP").to_string();
     let git_origin_remote = env!("GIT_ORIGIN_REMOTE").to_string();
 
+    let bls_public_key = format!("{:?}", bn254_public_key_g1);
+
     // Parameters needed for the root / endpoint
     let html_string = config.server.html_info.clone();
     let html_info = Html(
@@ -151,11 +156,9 @@ pub async fn run_server(
             .replace("{git_commit_hash}", &git_commit_hash)
             .replace("{git_commit_timestamp}", &git_commit_timestamp)
             .replace("{git_origin_remote}", &git_origin_remote)
-            .replace(
-                "{operator_address}",
-                &operator_wallet.address().encode_hex_with_prefix(),
-            )
-            .replace("{public_key}", &public_key),
+            .replace("{operator_address}", &operator_address.clone())
+            .replace("{public_key}", &public_key)
+            .replace("{operator_bls_public_key}", &bls_public_key),
     );
 
     let router = Router::new()
@@ -178,7 +181,7 @@ pub async fn run_server(
                         git_commit_hash,
                         git_commit_timestamp,
                         git_origin_remote,
-                        operator_address: operator_wallet.address().encode_hex_with_prefix(),
+                        operator_address: operator_address.clone(),
                     }),
                 )
                     .into_response()
