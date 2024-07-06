@@ -15,7 +15,11 @@ use hyper_util::rt::TokioIo;
 use notify::{
     event::ModifyKind, Error, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher,
 };
-use p256::{ecdsa::SigningKey, pkcs8::DecodePrivateKey};
+use p256::{
+    ecdsa::{SigningKey, VerifyingKey},
+    pkcs8::{DecodePrivateKey, DecodePublicKey},
+    PublicKey,
+};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use std::{
     collections::HashMap,
@@ -33,6 +37,7 @@ use tower_service::Service;
 use tracing::{debug, error, info};
 
 use crate::{
+    bn254::{self, BN254Signature, BN254SigningKey},
     config::{NotaryServerProperties, NotarySigningKeyProperties},
     domain::{
         auth::{authorization_whitelist_vec_into_hashmap, AuthorizationWhitelistRecord},
@@ -68,7 +73,7 @@ pub async fn run_server(
             panic!("operator_ecdsa_keystore_path not set in operator config file");
         });
 
-    let operator_bls_key =
+    let operator_bls_key: BN254SigningKey =
         load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
             panic!("Unable to decrypt operator BLS keystore: {:?}", err);
         });
@@ -76,7 +81,11 @@ pub async fn run_server(
     let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
 
     info!("Operator BLS key loaded {:?}", bn254_public_key_g1);
-
+    let notary_key_signature = sign_notary_public_key(&config.notary_key, operator_bls_key)?;
+    info!(
+        "Notary public key signed by operator BLS key {:?}",
+        notary_key_signature
+    );
     // Build TLS acceptor if it is turned on``
     let tls_acceptor = if !config.tls.enabled {
         debug!("Skipping TLS setup as it is turned off.");
@@ -147,6 +156,7 @@ pub async fn run_server(
     let git_origin_remote = env!("GIT_ORIGIN_REMOTE").to_string();
 
     let bls_public_key = format!("{:?}", bn254_public_key_g1);
+    let notary_key_signature_string = format!("{:?}", notary_key_signature);
 
     // Parameters needed for the root / endpoint
     let html_string = config.server.html_info.clone();
@@ -158,7 +168,8 @@ pub async fn run_server(
             .replace("{git_origin_remote}", &git_origin_remote)
             .replace("{operator_address}", &operator_address.clone())
             .replace("{public_key}", &public_key)
-            .replace("{operator_bls_public_key}", &bls_public_key),
+            .replace("{operator_bls_public_key}", &bls_public_key)
+            .replace("{notary_key_signature}", &notary_key_signature_string),
     );
 
     let router = Router::new()
@@ -265,12 +276,28 @@ pub async fn run_server(
 /// Load notary signing key from static file
 async fn load_notary_signing_key(config: &NotarySigningKeyProperties) -> Result<SigningKey> {
     debug!("Loading notary server's signing key");
-
+    let public_key = VerifyingKey::read_public_key_pem_file(&config.public_key_pem_path)
+        .map_err(|err| eyre!("Failed to load notary public key: {err}"))?;
     let notary_signing_key = SigningKey::read_pkcs8_pem_file(&config.private_key_pem_path)
         .map_err(|err| eyre!("Failed to load notary signing key for notarization: {err}"))?;
 
     debug!("Successfully loaded notary server's signing key!");
     Ok(notary_signing_key)
+}
+
+fn sign_notary_public_key(
+    config: &NotarySigningKeyProperties,
+    bn254_key: BN254SigningKey,
+) -> Result<BN254Signature> {
+    debug!("Signing notary server's public key with BN254 key");
+    let public_key = VerifyingKey::read_public_key_pem_file(&config.public_key_pem_path)
+        .map_err(|err| eyre!("Failed to load notary public key: {err}"))?;
+
+    let public_key_encoded = public_key.to_encoded_point(true);
+    let public_key_bytes = public_key_encoded.as_bytes();
+    let signature: BN254Signature = bn254::sign(bn254_key, public_key_bytes.clone())?;
+
+    Ok(signature)
 }
 
 /// Read a PEM-formatted file and return its buffer reader

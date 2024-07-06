@@ -2,16 +2,20 @@
 
 extern crate alloc;
 
-use ark_bn254::{Bn254, Fq, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
+use ark_bn254::{Bn254, Fq, Fr, FrConfig, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::pairing::Pairing;
 use ark_ec::{pairing::PairingOutput, AffineRepr, CurveGroup};
-use ark_ff::{BigInteger256, Field, PrimeField};
+use ark_ff::{BigInteger256, Field, Fp, MontBackend, PrimeField};
 use ark_std::One;
 
 use num_bigint::BigUint;
 use sha2::{Digest, Sha256};
 
 use crate::error::BLSError;
+
+pub type BN254SigningKey = Fp<MontBackend<FrConfig, 4>, 4>;
+pub type BN254PublicKey = G2Affine;
+pub type BN254Signature = G1Affine;
 
 pub fn vec_to_fr(vec: Vec<u8>) -> Result<Fr, &'static str> {
     // Convert the Vec<u8> to a BigInt (or directly to Fr if the library supports it)
@@ -63,7 +67,7 @@ fn hash_to_curve(digest: &[u8]) -> G1Affine {
     }
 }
 
-pub fn sign(sk: Fr, message: &[u8]) -> Result<G1Affine, BLSError> {
+pub fn sign(sk: Fr, message: &[u8]) -> Result<BN254Signature, BLSError> {
     let q = hash_to_curve(message);
 
     let sk_int: BigInteger256 = sk.into();

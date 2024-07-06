@@ -11,6 +11,7 @@ server:
     <li>operator address: <a href="https://app.eigenlayer.xyz/operator/{operator_address}">{operator_address}</a></li>
     <li>operator BLS public key: <pre>{operator_bls_public_key}</pre></li>
     <li>Notary public key: <pre>{public_key}</pre></li>
+    <li>Signed notary key: <pre>{notary_key_signature}</pre></li>
     </ul>
     <a href="/healthcheck">health check</a> - <a href="/info">info</a><br/>
 
