@@ -14,7 +14,7 @@ argv = [
 LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu"
 MALLOC_ARENA_MAX = "1"
 RUST_BACKTRACE = "full"
-OPERATOR_ECDSA_KEY_PASSWORD = { passthrough = true }
+OPERATOR_BLS_KEY_PASSWORD = { passthrough = true }
 
 [libos]
 entrypoint = "target/release/opacity-avs-node"
