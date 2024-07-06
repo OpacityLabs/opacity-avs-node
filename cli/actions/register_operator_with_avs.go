@@ -61,9 +61,10 @@ type OpacityConfig struct {
 	AVSDirectoryAddress         string `yaml:"avs_directory_address"`
 	EigenLayerDelegationManager string `yaml:"eigenlayer_delegation_manager"`
 	ChainId                     int    `yaml:"chain_id"`
-	EthRpcUrl                   string `yaml:"eth_rpc_url"`
 	ECDSAPrivateKeyStorePath    string `yaml:"ecdsa_private_key_store_path"`
 	BLSPrivateKeyStorePath      string `yaml:"bls_private_key_store_path"`
+	EthRpcUrl                   string `yaml:"eth_rpc_url"`
+	OperatorAddress             string `yaml:"operator_address"`
 	NodePublicIP                string `yaml:"node_public_ip"`
 }
 
@@ -105,44 +106,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	}
 
-	ecdsaKeyPassword, ok := os.LookupEnv("OPERATOR_ECDSA_KEY_PASSWORD")
-	if !ok {
-		log.Fatalln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
-		return ErrNoECDSAKeyPassword
-	}
-
-	FailIfNoFile(nodeConfig.ECDSAPrivateKeyStorePath)
-
-	operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
-		nodeConfig.ECDSAPrivateKeyStorePath,
-		ecdsaKeyPassword,
-	)
-
-	if operatorEcdsaPrivKey == nil {
-		log.Panicln("Unable to decrypt operator ecdsa private key.")
-		return errors.New("Unable to decrypt operator ecdsa private key.")
-	}
-	if err != nil {
-		log.Fatalln("Unable to decrypt operator ecdsa private key.")
-		return err
-	}
-
-	blsKeyPassword, ok := os.LookupEnv("OPERATOR_BLS_KEY_PASSWORD")
-	if !ok {
-		log.Fatalln("OPERATOR_BLS_KEY_PASSWORD env var not set. using empty string")
-		return ErrNoBLSKeyPassword
-	}
-	blsKeyPair, err := bls.ReadPrivateKeyFromFile(nodeConfig.BLSPrivateKeyStorePath, blsKeyPassword)
-
-	if blsKeyPair == nil {
-		log.Panicln("Unable to decrypt operator private key.")
-		return errors.New("Unable to decrypt operator bls private key.")
-	}
-	if err != nil {
-		log.Fatalln("Unable to decrypt operator bls private key.")
-		return err
-	}
-
 	client, err := ethclient.Dial(nodeConfig.EthRpcUrl)
 	if err != nil {
 		log.Fatal(err)
@@ -153,7 +116,7 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	registryCoordinatorAddress := common.HexToAddress(nodeConfig.RegistryCoordinatorAddress)
 	avsDirectoryAddress := common.HexToAddress(nodeConfig.AVSDirectoryAddress)
 	delegationManagerAddress := common.HexToAddress(nodeConfig.EigenLayerDelegationManager)
-	operatorAddress := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
+	operatorAddress := common.HexToAddress(nodeConfig.OperatorAddress)
 	avsDirectoryContract, err := contractAVSDirectory.NewContractAVSDirectoryCaller(avsDirectoryAddress, client)
 	if err != nil {
 		log.Fatal(err)
@@ -193,6 +156,50 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 	if operatorStatus == 0 {
 		// Register operator to AVS
+
+		ecdsaKeyPassword, ok := os.LookupEnv("OPERATOR_ECDSA_KEY_PASSWORD")
+		if !ok {
+			log.Fatalln("OPERATOR_ECDSA_KEY_PASSWORD env var not set. using empty string")
+			return ErrNoECDSAKeyPassword
+		}
+
+		FailIfNoFile(nodeConfig.ECDSAPrivateKeyStorePath)
+
+		operatorEcdsaPrivKey, err := sdkecdsa.ReadKey(
+			nodeConfig.ECDSAPrivateKeyStorePath,
+			ecdsaKeyPassword,
+		)
+
+		if operatorEcdsaPrivKey == nil {
+			log.Panicln("Unable to decrypt operator ecdsa private key.")
+			return errors.New("Unable to decrypt operator ecdsa private key.")
+		}
+		if err != nil {
+			log.Fatalln("Unable to decrypt operator ecdsa private key.")
+			return err
+		}
+
+		operatorAddress2 := crypto.PubkeyToAddress(operatorEcdsaPrivKey.PublicKey)
+		if operatorAddress2 != operatorAddress {
+			log.Fatalln("Operator address in private key file does not match operator address in config file.")
+			return errors.New("Operator address in private key file does not match operator address in config file.")
+		}
+
+		blsKeyPassword, ok := os.LookupEnv("OPERATOR_BLS_KEY_PASSWORD")
+		if !ok {
+			log.Fatalln("OPERATOR_BLS_KEY_PASSWORD env var not set. using empty string")
+			return ErrNoBLSKeyPassword
+		}
+		blsKeyPair, err := bls.ReadPrivateKeyFromFile(nodeConfig.BLSPrivateKeyStorePath, blsKeyPassword)
+
+		if blsKeyPair == nil {
+			log.Panicln("Unable to decrypt operator private key.")
+			return errors.New("Unable to decrypt operator bls private key.")
+		}
+		if err != nil {
+			log.Fatalln("Unable to decrypt operator bls private key.")
+			return err
+		}
 
 		saltBytes := make([]byte, 32)
 		var salt [32]byte
