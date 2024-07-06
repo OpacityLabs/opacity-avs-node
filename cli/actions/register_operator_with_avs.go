@@ -19,8 +19,10 @@ import (
 	sdkutils "github.com/Layr-Labs/eigensdk-go/utils"
 	contractAVSDirectory "github.com/OpacityLabs/opacity-avs-node/cli/bindings/AVSDirectory"
 	contractDelegationManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/DelegationManager"
+	contractOpacityServiceManager "github.com/OpacityLabs/opacity-avs-node/cli/bindings/OpacityServiceManager"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/urfave/cli"
@@ -128,6 +130,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		return err
 	}
 	registryCoordinatorContract, err := contractRegistryCoordinator.NewContractRegistryCoordinator(registryCoordinatorAddress, client)
+	if err != nil {
+		log.Fatal(err)
+		return err
+	}
+	opacityServiceContract, err := contractOpacityServiceManager.NewContractOpacityServiceManager(opacityAddress, client)
 	if err != nil {
 		log.Fatal(err)
 		return err
@@ -280,13 +287,20 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 
 		quorumNumbers := sdktypes.QuorumNums{0}
 
-		tx, err := registryCoordinatorContract.RegisterOperator(
-			auth,
-			quorumNumbers.UnderlyingType(),
-			nodeConfig.NodePublicIP,
-			pubkeyRegParams,
-			operatorSignatureWithSaltAndExpiry,
-		)
+		var tx *types.Transaction
+
+		if nodeConfig.ChainId == 1 {
+			tx, err = registryCoordinatorContract.RegisterOperator(
+				auth,
+				quorumNumbers.UnderlyingType(),
+				nodeConfig.NodePublicIP,
+				pubkeyRegParams,
+				operatorSignatureWithSaltAndExpiry,
+			)
+		} else {
+			tx, err = opacityServiceContract.RegisterOperatorToAVS(auth, operatorAddress, contractOpacityServiceManager.ISignatureUtilsSignatureWithSaltAndExpiry(operatorSignatureWithSaltAndExpiry))
+		}
+
 		if err != nil {
 			fmt.Println(err)
 			return err
