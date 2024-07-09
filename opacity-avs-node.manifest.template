@@ -54,7 +54,7 @@ allowed_files = [
     "file:fixture/tls/rootCA.srl",
 
 ]
-max_threads = 16
+max_threads = 32
 isvprodid = 0
 isvsvn = 0
 require_avx = false
