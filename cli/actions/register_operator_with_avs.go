@@ -217,16 +217,13 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		expiry += 60 * 60 * 24
 
 		expiryBigInt := big.NewInt(int64(expiry))
-		fmt.Println("Expiry:", expiryBigInt)
-		fmt.Println("operatorAddress:", operatorAddress)
-		fmt.Println("avsAddress:", opacityAddress)
 
 		hash, err := avsDirectoryContract.CalculateOperatorAVSRegistrationDigestHash(nil, operatorAddress, opacityAddress, salt, expiryBigInt)
 		if err != nil {
 			log.Fatal(err)
 
 		}
-		fmt.Println("Registering operator with Hash", hash)
+
 		operatorSignature, err := crypto.Sign(hash[:], operatorEcdsaPrivKey)
 		operatorSignature[64] += 27
 		if err != nil {
@@ -263,7 +260,11 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 		auth.Nonce = big.NewInt(int64(nonce))
 		auth.Value = big.NewInt(0)      // in wei
 		auth.GasLimit = uint64(1500000) // in units
-		auth.GasPrice = gasPrice
+		if nodeConfig.ChainId == 1 {
+			auth.GasPrice = gasPrice
+		} else {
+			auth.GasPrice = gasPrice.Add(gasPrice, gasPrice)
+		}
 
 		g1HashedMsgToSign, err := registryCoordinatorContract.PubkeyRegistrationMessageHash(nil, operatorAddress)
 		if err != nil {
@@ -282,8 +283,6 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			PubkeyG1:                    G1pubkeyBN254,
 			PubkeyG2:                    G2pubkeyBN254,
 		}
-
-		fmt.Println("Registering Operator to AVS", pubkeyRegParams)
 
 		quorumNumbers := sdktypes.QuorumNums{0}
 
@@ -306,25 +305,28 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 			return err
 		}
 
-		fmt.Println("Register operator to AVS TX broadcasted")
-		fmt.Println("Etherscan URL: https://etherscan.io/tx/" + tx.Hash().Hex())
+		fmt.Println("Register operator to AVS TX broadcasted!")
+		fmt.Println(GetEtherscanURI(nodeConfig, tx.Hash().Hex()))
 
 		var foundTx bool = false
 
 		for !foundTx {
+			time.Sleep(5 * time.Second)
 			txReceipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 			if err != nil {
-				fmt.Println("Transaction not mined yet")
-				time.Sleep(5 * time.Second)
+				fmt.Println("Transaction not mined yet, waiting for 5 seconds")
+				continue
+			} else {
+				fmt.Println("Transaction included in block ", txReceipt.BlockNumber)
+				if txReceipt.Status == ReceiptStatusFailed {
+					log.Fatalln("error: transaction reverted, failed to register operator to AVS")
+					return errors.New("error: transaction reverted, failed to register operator to AVS")
+				}
+				if txReceipt.Status == ReceiptStatusSuccessful {
+					foundTx = true
+				}
 			}
-			fmt.Println("Transaction included in block ", txReceipt.BlockNumber)
-			if txReceipt.Status == ReceiptStatusFailed {
-				log.Fatalln("error: transaction reverted, failed to register operator to AVS")
-				return errors.New("error: transaction reverted, failed to register operator to AVS")
-			}
-			if txReceipt.Status == ReceiptStatusSuccessful {
-				foundTx = true
-			}
+
 		}
 
 		return nil
@@ -332,6 +334,16 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	} else {
 		fmt.Println("Operator is registered to AVS")
 		return nil
+	}
+
+}
+
+func GetEtherscanURI(config OpacityConfig, txHash string) string {
+
+	if config.ChainId == 1 {
+		return "Etherscan URL: https://etherscan.io/tx/" + txHash
+	} else {
+		return "Etherscan URL: https://holesky.etherscan.io/tx/" + txHash
 	}
 
 }
