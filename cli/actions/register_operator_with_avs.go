@@ -86,8 +86,8 @@ func RegisterOperatorWithAvs(ctx *cli.Context) error {
 	FailIfNoFile(configPath)
 
 	nodeConfig := OpacityConfig{
-		ECDSAPrivateKeyStorePath: "/opacity-avs-node/opacity.ecdsa.key.json",
-		BLSPrivateKeyStorePath:   "/opacity-avs-node/opacity.bls.key.json",
+		ECDSAPrivateKeyStorePath: "/opacity-avs-node/config/opacity.ecdsa.key.json",
+		BLSPrivateKeyStorePath:   "/opacity-avs-node/config/opacity.bls.key.json",
 	}
 	err := sdkutils.ReadYamlConfig(configPath, &nodeConfig)
 	if err != nil {
