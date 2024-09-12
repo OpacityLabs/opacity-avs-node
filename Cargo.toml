@@ -53,7 +53,58 @@ ark-std = { version = "0.4.0" }
 ark-ec = { version = "0.4.2" }
 sha2 = { version = "0.10.6" }
 num-bigint = "0.4.5"
-
+alloy-chains = "0.1.15"
+alloy-consensus = { version = "0.1", default-features = false }
+alloy-contract = { version = "0.1", default-features = false }
+alloy-dyn-abi = "0.7.2"
+alloy-eips = { version = "0.1", default-features = false }
+alloy-genesis = { version = "0.1", default-features = false }
+alloy-json-rpc = { version = "0.1", default-features = false }
+alloy-network = { version = "0.1", default-features = false }
+alloy-node-bindings = { version = "0.1", default-features = false }
+alloy-primitives = "0.7.2"
+alloy-provider = { version = "0.1", default-features = false, features = [
+    "reqwest",
+    "ws",
+] }
+alloy-pubsub = { version = "0.1", default-features = false }
+alloy-rlp = "0.3.4"
+alloy-rpc-client = "0.1"
+alloy-rpc-types = { version = "0.1", default-features = false, features = [
+    "eth",
+] }
+alloy-rpc-types-admin = { version = "0.1", default-features = false }
+alloy-rpc-types-anvil = { version = "0.1", default-features = false }
+alloy-rpc-types-beacon = { version = "0.1", default-features = false }
+alloy-rpc-types-engine = { version = "0.1", default-features = false }
+alloy-rpc-types-eth = { version = "0.1", default-features = false }
+alloy-rpc-types-trace = { version = "0.1", default-features = false }
+alloy-rpc-types-txpool = { version = "0.1", default-features = false }
+alloy-serde = { version = "0.1", default-features = false }
+alloy-signer = { version = "0.1", default-features = false }
+alloy-signer-aws = "0.1"
+alloy-signer-local = { version = "0.1", default-features = false }
+alloy-sol-types = "0.7.2"
+alloy-transport = { version = "0.1" }
+alloy-transport-http = { version = "0.1", features = [
+    "reqwest-rustls-tls",
+], default-features = false }
+alloy-transport-ipc = { version = "0.1", default-features = false }
+alloy-transport-ws = { version = "0.1", default-features = false }
+alloy-trie = "0.4"
+eigen-client-avsregistry = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
+eigen-client-elcontracts = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
+eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+lazy_static = "1.5.0"
+rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
+    "std",
+] }
+eth-keystore = "0.5.0"
+hex = "0.4"
+ecdsa = "0.13.0"
 [dev-dependencies]
 # specify vendored feature to use statically linked copy of OpenSSL
 hyper-tls = { version = "0.5.0", features = ["vendored"] }
@@ -63,3 +114,8 @@ tls-core = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alph
 notary-client = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "notary-client" }
 tokio-native-tls = { version = "0.3.1", features = ["vendored"] }
 http-body-util = "0.1"
+
+
+[[bin]]
+name = "register"
+path = "src/register.rs"
