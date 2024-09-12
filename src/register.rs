@@ -87,7 +87,7 @@ async fn main() -> Result<()> {
     let operator_address = wallet.address();
     let is_operator_registered = el_chain_reader.is_operator_registered(operator_address).await?;
     if !is_operator_registered {
-        return Err(eyre::eyre!("Operator not registered"));
+        return Err(eyre::eyre!("Operator not registered to EigenLayer"));
     }
     let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
     let test_logger = get_test_logger();
