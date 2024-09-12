@@ -18,7 +18,14 @@ use std::{fs,env,path::Path,collections::HashMap};
 use rust_bls_bn254::keystores::base_keystore::Keystore;
 use eth_keystore::decrypt_key;
 use hex;
-use ecdsa;
+use rand::Rng;        
+
+fn generate_random_bytes() -> FixedBytes<32> {
+    let mut rng = rand::thread_rng();
+    let mut random_bytes = [0u8; 32];  // A 32-byte array initialized to zeros
+    rng.fill(&mut random_bytes);       // Fill the array with random bytes
+    FixedBytes::from(random_bytes)     // Convert to FixedBytes<32>
+}
 
 #[derive(Debug, Deserialize)]
 struct Config {
@@ -32,16 +39,11 @@ struct Config {
     eth_rpc_url: String,
     node_public_ip: String,
 }
-// registry_coordinator_address: 0x3e43AA225b5cB026C5E8a53f62572b10D526a50B
-// opacity_avs_address: 0xbfc5d26c6eeb46475eb3960f5373edc5341ee535
-// avs_directory_address: 0x055733000064333CaDDbC92763c58BF0192fFeBf
-// eigenlayer_delegation_manager: 0xA44151489861Fe9e3055d95adC98FbD462B948e7
-// use eigen_types::operator::Operator;
+
 use eyre::Result;
 use lazy_static::lazy_static;
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-use alloy_primitives::address;
 
 lazy_static! {
     /// 1 day
@@ -114,56 +116,54 @@ async fn main() -> Result<()> {
     
     let bls_private_keystore_path = "~/.eigenlayer/operator_keys/holesky_op_2.bls.key.json";
     let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD").map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
-    // let file_content = fs::read_to_string(bls_private_keystore_path)?;
-    // println!("file_content: {:?}", file_content);
-    // let json_dict: HashMap<String, serde_json::Value> = serde_json::from_str(&file_content)?;
+    let file_content = fs::read_to_string(bls_private_keystore_path)?;
+    println!("file_content: {:?}", file_content);
+    let json_dict: HashMap<String, serde_json::Value> = serde_json::from_str(&file_content)?;
     let keystore_instance = Keystore::from_file(bls_private_keystore_path).unwrap();
-    // let decrypted_key = keystore_instance.decrypt(&bls_key_password).unwrap();
-    // let fr_key: String = decrypted_key.iter().map(|&value| value as char).collect();
-    // println!("fr_key: {:?}", fr_key);
-    // let bls_key_pair = BlsKeyPair::new(fr_key)?;
+    let decrypted_key = keystore_instance.decrypt(&bls_key_password).unwrap();
+    let fr_key: String = decrypted_key.iter().map(|&value| value as char).collect();
+    println!("fr_key: {:?}", fr_key);
+    let bls_key_pair = BlsKeyPair::new(fr_key)?;
 
 
 
-    // let public_key = wallet.address(); 
-    // let salt: FixedBytes<32> = FixedBytes::ZERO;
+    let salt: FixedBytes<32> = generate_random_bytes();
+    // Get the current SystemTime
+    let now = SystemTime::now();
+    let mut sig_expiry: U256 = U256::from(0);
+    // Convert SystemTime to a Duration since the UNIX epoch
+    if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+        // Convert the duration to seconds
+        let seconds = duration_since_epoch.as_secs(); // Returns a u64
 
-    // // Get the current SystemTime
-    // let now = SystemTime::now();
-    // let mut sig_expiry: U256 = U256::from(0);
-    // // Convert SystemTime to a Duration since the UNIX epoch
-    // if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
-    //     // Convert the duration to seconds
-    //     let seconds = duration_since_epoch.as_secs(); // Returns a u64
-
-    //     // Convert seconds to U256
-    //     sig_expiry = U256::from(seconds) + *SIGNATURE_EXPIRY;
-    // } else {
-    //     println!("System time seems to be before the UNIX epoch.");
-    // }
+        // Convert seconds to U256
+        sig_expiry = U256::from(seconds) + *SIGNATURE_EXPIRY;
+    } else {
+        println!("System time seems to be before the UNIX epoch.");
+    }
 
 
 
-    // let digest_hash: FixedBytes<32> = el_chain_reader
-    // .calculate_operator_avs_registration_digest_hash(
-    //     public_key,
-    //     opacity_registry_coordinator_address,
-    //     salt,
-    //     sig_expiry,
-    // )
-    // .await?;
-    // // print!("digest_hash: {:?}", digest_hash);
-    // let quorum_nums = Bytes::from([0x00]);
+    let digest_hash: FixedBytes<32> = el_chain_reader
+    .calculate_operator_avs_registration_digest_hash(
+        operator_address,
+        opacity_registry_coordinator_address,
+        salt,
+        sig_expiry,
+    )
+    .await?;
+    // print!("digest_hash: {:?}", digest_hash);
+    let quorum_nums = Bytes::from([0x00]);
 
-    // // Register the operator in registry coordinator
-    // avs_registry_writer
-    //     .register_operator_in_quorum_with_avs_registry_coordinator(
-    //         bls_key_pair,
-    //         digest_hash,
-    //         sig_expiry,
-    //         quorum_nums,
-    //         config.node_public_ip, // socket
-    //     )
-    //     .await?;
+    // Register the operator in registry coordinator
+    avs_registry_writer
+        .register_operator_in_quorum_with_avs_registry_coordinator(
+            bls_key_pair,
+            digest_hash,
+            sig_expiry,
+            quorum_nums,
+            config.node_public_ip, // socket
+        )
+        .await?;
     Ok(())
 }
