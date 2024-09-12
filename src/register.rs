@@ -4,6 +4,7 @@ use alloy_primitives::{Bytes, FixedBytes};
 use alloy_provider::Provider;
 use alloy_signer_local::PrivateKeySigner;
 use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
+use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_test_logger;
@@ -61,27 +62,56 @@ async fn main() -> Result<()> {
     let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
     println!("config: {:?}", config);
 
-    // let provider = get_provider(&config.eth_rpc_url);
-    // let chain_id = provider.get_chain_id().await?;
-    // if chain_id != config.chain_id {
-    //     return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
-    // }
-    // let ecdsa_key_password: String = env::var("OPERATOR_ECDSA_KEY_PASSWORD").map_err(|_| eyre::eyre!("ECDSA key password env var not set"))?;
-    // let ecdsa_keypath = Path::new(&ecdsa_private_keystore_path);
-    // let private_key = decrypt_key(ecdsa_keypath, ecdsa_key_password)?;
-    // let wallet = PrivateKeySigner::from_slice(&private_key)?;
-    // let private_key_string = hex::encode(wallet.credential().to_bytes());
-    // let test_logger = get_test_logger();
-    // let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
-    // let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
-    //     test_logger.clone(),
-    //     config.eth_rpc_url,
-    //     private_key_string,
-    //     opacity_registry_coordinator_address,
-    //     OPERATOR_STATE_RETRIEVER,
-    // )
-    // .await
-    // .expect("avs writer build fail ");
+    let provider = get_provider(&config.eth_rpc_url);
+    let chain_id = provider.get_chain_id().await?;
+    if chain_id != config.chain_id {
+        return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
+    }
+
+    let ecdsa_key_password: String = env::var("OPERATOR_ECDSA_KEY_PASSWORD").map_err(|_| eyre::eyre!("ECDSA key password env var not set"))?;
+    let ecdsa_keypath = Path::new(&ecdsa_private_keystore_path);
+    let private_key = decrypt_key(ecdsa_keypath, ecdsa_key_password)?;
+    let wallet = PrivateKeySigner::from_slice(&private_key)?;
+    let private_key_string = hex::encode(wallet.credential().to_bytes());
+    let rpc_url_chain_reader = config.eth_rpc_url.clone();
+    let rpc_url_registry_reader = config.eth_rpc_url.clone();
+    let rpc_url_registry_writer = config.eth_rpc_url.clone();
+
+    let el_chain_reader = ELChainReader::new(
+        get_test_logger().clone(),
+        SLASHER_ADDRESS,
+        DELEGATION_MANAGER_ADDRESS,
+        AVS_DIRECTORY_ADDRESS,
+        rpc_url_chain_reader,
+    );
+    let operator_address = wallet.address();
+    let is_operator_registered = el_chain_reader.is_operator_registered(operator_address).await?;
+    if !is_operator_registered {
+        return Err(eyre::eyre!("Operator not registered"));
+    }
+    let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
+    let test_logger = get_test_logger();
+    let avs_registry_reader = AvsRegistryChainReader::new(
+        test_logger.clone(),
+        opacity_registry_coordinator_address,
+        OPERATOR_STATE_RETRIEVER,
+        rpc_url_registry_reader,
+    ).await?;
+    
+    let is_operator_registered_in_avs = avs_registry_reader.is_operator_registered(operator_address).await?;
+    if is_operator_registered_in_avs {
+        return Err(eyre::eyre!("Operator not registered in AVS"));
+    }
+    let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
+        test_logger.clone(),
+        rpc_url_registry_writer,
+        private_key_string,
+        opacity_registry_coordinator_address,
+        OPERATOR_STATE_RETRIEVER,
+    )
+    .await
+    .expect("avs writer build fail ");
+    
     let bls_private_keystore_path = "~/.eigenlayer/operator_keys/holesky_op_2.bls.key.json";
     let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD").map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
     // let file_content = fs::read_to_string(bls_private_keystore_path)?;
@@ -113,14 +143,7 @@ async fn main() -> Result<()> {
     // }
 
 
-    // // A new ElChainReader instance
-    // let el_chain_reader = ELChainReader::new(
-    //     get_test_logger().clone(),
-    //     SLASHER_ADDRESS,
-    //     DELEGATION_MANAGER_ADDRESS,
-    //     AVS_DIRECTORY_ADDRESS,
-    //     config.eth_rpc_url,
-    // );
+
     // let digest_hash: FixedBytes<32> = el_chain_reader
     // .calculate_operator_avs_registration_digest_hash(
     //     public_key,
