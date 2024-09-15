@@ -1,6 +1,6 @@
 //! register operator in quorum with avs registry coordinator
 use alloy_primitives::U256;
-use alloy_primitives::{Bytes, FixedBytes};
+use alloy_primitives::{Bytes, FixedBytes,Address};
 use alloy_provider::Provider;
 use alloy_signer_local::PrivateKeySigner;
 use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
@@ -8,10 +8,6 @@ use eigen_client_avsregistry::reader::AvsRegistryChainReader;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_test_logger;
-use eigen_testing_utils::m2_holesky_constants::{
-    AVS_DIRECTORY_ADDRESS, DELEGATION_MANAGER_ADDRESS, OPERATOR_STATE_RETRIEVER,
-    SLASHER_ADDRESS
-};
 use eigen_utils::get_provider;
 use serde::Deserialize;
 use std::{fs,env,path::Path};
@@ -26,6 +22,15 @@ fn generate_random_bytes() -> FixedBytes<32> {
     let mut random_bytes = [0u8; 32];  // A 32-byte array initialized to zeros
     rng.fill(&mut random_bytes);       // Fill the array with random bytes
     FixedBytes::from(random_bytes)     // Convert to FixedBytes<32>
+}
+
+fn get_etherscan_uri(chain_id: u64, tx_hash: &str) -> String {
+    let etherscan_url = if chain_id == 1 {
+        "https://etherscan.io/tx/"
+    } else {
+        "https://holesky.etherscan.io/tx/"
+    };
+    format!("{}{}", etherscan_url, tx_hash)
 }
 
 #[derive(Debug, Deserialize)]
@@ -61,11 +66,9 @@ async fn main() -> Result<()> {
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
     let config: Config = serde_yaml::from_str(&yaml_content)?;
-    // let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
-    // let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
-    let ecdsa_private_keystore_path = "/Users/wk/.eigenlayer/operator_keys/holesky_test.ecdsa.key.json";
-    let bls_private_keystore_path = "/Users/wk/.eigenlayer/operator_keys/holesky_test.bls.key.json";
-    println!("config: {:?}", config);
+    let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
+    let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
+    println!("Starting with config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
     let chain_id = provider.get_chain_id().await?;
@@ -81,12 +84,25 @@ async fn main() -> Result<()> {
     let rpc_url_chain_reader = config.eth_rpc_url.clone();
     let rpc_url_registry_reader = config.eth_rpc_url.clone();
     let rpc_url_registry_writer = config.eth_rpc_url.clone();
-
+    let avs_directory_address = Address::from_str(&config.avs_directory_address)?;
+    let delegation_manager_address = Address::from_str(&config.eigenlayer_delegation_manager)?;
+    let operator_state_retriever_address = if config.chain_id == 1 {
+        Address::from_str("D5D7fB4647cE79740E6e83819EFDf43fa74F8C31")?
+    } else {
+        Address::from_str("B4baAfee917fb4449f5ec64804217bccE9f46C67")?
+    };
+    let slasher_address = if config.chain_id == 1 {
+        Address::from_str("D92145c07f8Ed1D392c1B88017934E301CC1c3Cd")?
+    } else {
+        Address::from_str("cAe751b75833ef09627549868A04E32679386e7C")?
+    };
+    let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
+    
     let el_chain_reader = ELChainReader::new(
         get_test_logger().clone(),
-        SLASHER_ADDRESS,
-        DELEGATION_MANAGER_ADDRESS,
-        AVS_DIRECTORY_ADDRESS,
+        slasher_address,
+        delegation_manager_address,
+        avs_directory_address,
         rpc_url_chain_reader,
     );
     let operator_address = wallet.address();
@@ -94,12 +110,11 @@ async fn main() -> Result<()> {
     if !is_operator_registered {
         return Err(eyre::eyre!("Operator not registered to EigenLayer"));
     }
-    let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
     let test_logger = get_test_logger();
     let avs_registry_reader = AvsRegistryChainReader::new(
         test_logger.clone(),
         opacity_registry_coordinator_address,
-        OPERATOR_STATE_RETRIEVER,
+        operator_state_retriever_address,
         rpc_url_registry_reader,
     ).await?;
     
@@ -112,7 +127,7 @@ async fn main() -> Result<()> {
         rpc_url_registry_writer,
         private_key_string,
         opacity_registry_coordinator_address,
-        OPERATOR_STATE_RETRIEVER,
+        operator_state_retriever_address,
     )
     .await
     .expect("avs writer build fail ");
@@ -161,7 +176,25 @@ async fn main() -> Result<()> {
             config.node_public_ip, // socket
         )
         .await?;
-    let receipt = provider.get_transaction_receipt(tx_hash).await?;
-    println!("Transaction receipt: {:?}", receipt);
+    
+    println!("Register operator to AVS TX broadcasted!");
+    println!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
+
+    let mut reciept_recieved = false;
+    while !reciept_recieved {
+        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+        let receipt = provider.get_transaction_receipt(tx_hash.clone()).await?;
+        match receipt {
+            Some(receipt) => {
+                reciept_recieved = true;
+                if receipt.status(){
+                    println!("Transaction succeeded!: {:?}", receipt);
+                }
+            }
+            None => {
+                println!("Transaction receipt not yet received");
+            }
+        }
+    }
     Ok(())
 }
