@@ -14,11 +14,12 @@ use eigen_testing_utils::m2_holesky_constants::{
 };
 use eigen_utils::get_provider;
 use serde::Deserialize;
-use std::{fs,env,path::Path,collections::HashMap};
-use rust_bls_bn254::keystores::base_keystore::Keystore;
+use std::{fs,env,path::Path};
 use eth_keystore::decrypt_key;
 use hex;
 use rand::Rng;        
+use eth_bn254_keystore;
+use num_bigint::BigUint;
 
 fn generate_random_bytes() -> FixedBytes<32> {
     let mut rng = rand::thread_rng();
@@ -114,17 +115,10 @@ async fn main() -> Result<()> {
     .await
     .expect("avs writer build fail ");
     
-    let bls_private_keystore_path = "~/.eigenlayer/operator_keys/holesky_op_2.bls.key.json";
     let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD").map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
-    let file_content = fs::read_to_string(bls_private_keystore_path)?;
-    println!("file_content: {:?}", file_content);
-    let json_dict: HashMap<String, serde_json::Value> = serde_json::from_str(&file_content)?;
-    let keystore_instance = Keystore::from_file(bls_private_keystore_path).unwrap();
-    let decrypted_key = keystore_instance.decrypt(&bls_key_password).unwrap();
-    let fr_key: String = decrypted_key.iter().map(|&value| value as char).collect();
-    println!("fr_key: {:?}", fr_key);
-    let bls_key_pair = BlsKeyPair::new(fr_key)?;
-
+    let decrypted_key_vector = eth_bn254_keystore::decrypt_key(bls_private_keystore_path, bls_key_password)?;
+    let fr = BigUint::from_bytes_be(&decrypted_key_vector).to_string();
+    let bls_key_pair = BlsKeyPair::new(fr)?;
 
 
     let salt: FixedBytes<32> = generate_random_bytes();

@@ -75,7 +75,6 @@ rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev 
 eth-keystore = "0.5.0"
 hex = "0.4"
 rand = "0.8"  # Or latest version
-
 [dev-dependencies]
 # specify vendored feature to use statically linked copy of OpenSSL
 hyper-tls = { version = "0.5.0", features = ["vendored"] }
