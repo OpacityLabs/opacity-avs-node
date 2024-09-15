@@ -61,8 +61,10 @@ async fn main() -> Result<()> {
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
     let config: Config = serde_yaml::from_str(&yaml_content)?;
-    let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
-    let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
+    // let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
+    // let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
+    let ecdsa_private_keystore_path = "/Users/wk/.eigenlayer/operator_keys/holesky_test.ecdsa.key.json";
+    let bls_private_keystore_path = "/Users/wk/.eigenlayer/operator_keys/holesky_test.bls.key.json";
     println!("config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
@@ -150,7 +152,7 @@ async fn main() -> Result<()> {
     let quorum_nums = Bytes::from([0x00]);
 
     // Register the operator in registry coordinator
-    avs_registry_writer
+    let tx_hash = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             bls_key_pair,
             digest_hash,
@@ -159,5 +161,7 @@ async fn main() -> Result<()> {
             config.node_public_ip, // socket
         )
         .await?;
+    let receipt = provider.get_transaction_receipt(tx_hash).await?;
+    println!("Transaction receipt: {:?}", receipt);
     Ok(())
 }
