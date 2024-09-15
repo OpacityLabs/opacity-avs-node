@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
 
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
-    let mut config: Config = serde_yaml::from_str(&yaml_content)?;
+    let config: Config = serde_yaml::from_str(&yaml_content)?;
     let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
     let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
     println!("config: {:?}", config);
