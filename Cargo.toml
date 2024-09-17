@@ -53,7 +53,28 @@ ark-std = { version = "0.4.0" }
 ark-ec = { version = "0.4.2" }
 sha2 = { version = "0.10.6" }
 num-bigint = "0.4.5"
+alloy-chains = "0.1.15"
+alloy-signer-local = { version = "0.1", default-features = false }
+alloy-provider = { version = "0.1", default-features = false, features = [
+    "reqwest",
+    "ws",
+] }
+alloy-primitives = "0.7.2"
+alloy-rlp = "0.3.4"
 
+eigen-client-avsregistry = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
+eigen-client-elcontracts = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
+eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+lazy_static = "1.5.0"
+rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
+    "std",
+] }
+eth-keystore = "0.5.0"
+hex = "0.4"
+rand = "0.8"  # Or latest version
 [dev-dependencies]
 # specify vendored feature to use statically linked copy of OpenSSL
 hyper-tls = { version = "0.5.0", features = ["vendored"] }
@@ -63,3 +84,8 @@ tls-core = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alph
 notary-client = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "notary-client" }
 tokio-native-tls = { version = "0.3.1", features = ["vendored"] }
 http-body-util = "0.1"
+
+
+[[bin]]
+name = "register"
+path = "src/register.rs"
