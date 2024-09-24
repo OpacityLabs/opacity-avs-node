@@ -70,7 +70,7 @@ pub async fn run_server(
         .operator_bls_keystore_path
         .clone()
         .unwrap_or_else(|| {
-            panic!("operator_ecdsa_keystore_path not set in operator config file");
+            panic!("operator_bls_keystore_path not set in operator config file");
         });
 
     let operator_bls_key: BN254SigningKey =

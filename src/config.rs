@@ -84,7 +84,6 @@ pub struct OperatorProperties {
     pub eth_rpc_url: String,
     pub node_public_ip: String,
     pub operator_address: String,
-    pub operator_ecdsa_keystore_path: Option<String>,
     pub operator_bls_keystore_path: Option<String>,
 }
 
