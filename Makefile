@@ -60,7 +60,6 @@ endif
 .PHONY: start-node
 start-node: 
 	@set -e
-	@make register-opacity-node
 	@make generate-notary-keys
 	@opacity-avs-node --config-file ./config/config.yaml
 	$(GRAMINE) opacity-avs-node
@@ -83,7 +82,7 @@ docker-push:
 
 
 register-opacity-node:
-	cargo run --bin register config/opacity.config.yaml 
+	./register config/opacity.config.yaml 
 
 
 .PHONY: generate-notary-keys
