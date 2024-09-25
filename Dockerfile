@@ -39,6 +39,7 @@ RUN cargo build --release
 RUN ./generate_notary_keys.sh
 RUN make SGX=1
 RUN mv ./target/release/opacity-avs-node .
+RUN mv ./target/release/register .
 RUN cargo clean
 RUN mkdir -p target
 RUN mkdir -p target/release
