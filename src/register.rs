@@ -180,21 +180,38 @@ async fn main() -> Result<()> {
     println!("Register operator to AVS TX broadcasted!");
     println!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
 
-    let mut reciept_recieved = false;
-    while !reciept_recieved {
+    let mut receipt_received = false;
+    let mut attempts = 0;
+    const MAX_ATTEMPTS: u32 = 30; // Maximum number of attempts (1 minute with 2-second intervals)
+
+    while !receipt_received && attempts < MAX_ATTEMPTS {
         tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
-        let receipt = provider.get_transaction_receipt(tx_hash.clone()).await?;
-        match receipt {
-            Some(receipt) => {
-                reciept_recieved = true;
-                if receipt.status(){
-                    println!("Transaction succeeded!: {:?}", receipt);
+        attempts += 1;
+
+        match provider.get_transaction_receipt(tx_hash.clone()).await {
+            Ok(Some(receipt)) => {
+                receipt_received = true;
+                if receipt.status() {
+                    println!("Transaction succeeded! Block number: {:?}", receipt.block_number);
+                } else {
+                    println!("Transaction failed!, transaction receipt details: {:?}", receipt);
                 }
             }
-            None => {
-                println!("Transaction receipt not yet received");
+            Ok(None) => {
+                println!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
+            }
+            Err(e) => {
+                println!("Error fetching transaction receipt: {:?}", e);
+                if attempts == MAX_ATTEMPTS {
+                    return Err(eyre::eyre!("Failed to get transaction receipt after {} attempts", MAX_ATTEMPTS));
+                }
             }
         }
     }
+
+    if !receipt_received {
+        return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));
+    }
+
     Ok(())
 }

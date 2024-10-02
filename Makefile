@@ -27,7 +27,6 @@ RA_CLIENT_SPID ?= 12345678901234567890123456789012
 RA_CLIENT_LINKABLE ?= 0
 
 GIT_HASH=$(shell git rev-parse HEAD)
-ECDSA_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.ecdsa.key.json
 BLS_KEY=$(HOME)/.eigenlayer/operator_keys/opacity.bls.key.json
 
 
@@ -61,7 +60,6 @@ endif
 .PHONY: start-node
 start-node: 
 	@set -e
-	@make register-opacity-node
 	@make generate-notary-keys
 	@opacity-avs-node --config-file ./config/config.yaml
 	$(GRAMINE) opacity-avs-node
@@ -84,7 +82,7 @@ docker-push:
 
 
 register-opacity-node:
-	cargo run --bin register config/opacity.config.yaml 
+	./register config/opacity.config.yaml 
 
 
 .PHONY: generate-notary-keys
