@@ -74,13 +74,11 @@ distclean: clean
 
 .PHONY: docker-build
 docker-build:
-	docker build . --tag opacitylabs/opacity-avs-node
-/opacity-avs-node:latest
+	docker build . --tag opacitylabs/opacity-avs-node:latest
 
 .PHONY: docker-push
 docker-push:
-	docker push opacitylabs/opacity-avs-node
-/opacity-avs-node:latest
+	docker push opacitylabs/opacity-avs-node:latest
 
 
 register-opacity-node:
