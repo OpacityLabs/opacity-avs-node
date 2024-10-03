@@ -34,7 +34,7 @@ Cargo.lock
 # metrics
 *.csv
 
-config/opacity.config.yaml
+# config/opacity.config.yaml
 config/opacity.bls.key.json
 
 tlsn
