@@ -1,0 +1,15 @@
+#! This config is internal for the docker image, no need to modify it
+
+production: false
+registry_coordinator_address: 0xeCd099fA5048c3738a5544347D8cBc8076E76494
+opacity_avs_address: 0xCE06c5fe42d22fF827A519396583Fd9f5176E3D3
+avs_directory_address: 0x135DDa560e946695d6f155dACaFC6f1F25C1F5AF
+eigenlayer_delegation_manager: 0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A
+chain_id: 1
+
+# Set these
+eth_rpc_url: https://holesky.infura.io/v3/2846bf5ee25842fdaa779c49ff63a9ea
+operator_address: 0xe743b96d0c9b50a0d902a93c95ccb4ac8749a8c5
+node_public_ip: 0.0.0.0
+operator_ecdsa_keystore_path: ./fixture/operator/opacity.ecdsa.key.local.json
+operator_bls_keystore_path: ./fixture/operator/opacity.bls.key.local.json
