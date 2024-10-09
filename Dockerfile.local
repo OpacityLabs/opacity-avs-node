@@ -1,0 +1,21 @@
+FROM rust 
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  pkg-config \
+  libssl-dev \
+  openssl \
+  openssh-client \
+  build-essential \
+  lld \
+  wget \
+  git
+
+
+WORKDIR /opacity-avs-node
+COPY . .
+RUN mkdir bin
+RUN git config --global url."https://github.com/".insteadOf git@github.com:
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+RUN cargo build --release
+RUN ./generate_notary_keys.sh
+ENTRYPOINT ["cargo", "run", "--bin", "opacity-avs-node", "--release", "--", "--config-file", "config/config.yaml"]
