@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   pkg-config \
   libssl-dev \
   openssl \
+  openssh-client \
   build-essential \
   lld \
   wget \
@@ -24,19 +25,21 @@ RUN tar -xvf go1.21.0.linux-amd64.tar.gz -C /usr/local
 ENV GOROOT=/usr/local/go
 ENV GOPATH=$HOME/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@latest
+RUN go install github.com/Layr-Labs/eigenlayer-cli/cmd/eigenlayer@v0.10.3
 RUN mv /go/bin/eigenlayer ./bin/
-RUN go build -o ./bin/avs-cli cli/main.go
 RUN rm go1.21.0.linux-amd64.tar.gz
 
 # This should be associated with an acive IAS SPID in order for
 # gramine tools like gramine-sgx-ias-request and gramine-sgx-ias-verify
 # ENV RA_CLIENT_SPID=51CAF5A48B450D624AEFE3286D314894
 # ENV RA_CLIENT_LINKABLE=1
+RUN git config --global url."https://github.com/".insteadOf git@github.com:
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 RUN cargo build --release
 RUN ./generate_notary_keys.sh
 RUN make SGX=1
 RUN mv ./target/release/opacity-avs-node .
+RUN mv ./target/release/register .
 RUN cargo clean
 RUN mkdir -p target
 RUN mkdir -p target/release
