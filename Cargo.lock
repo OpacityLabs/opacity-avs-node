@@ -4464,6 +4464,7 @@ dependencies = [
  "eigen-logging",
  "eigen-testing-utils",
  "eigen-utils",
+ "elliptic-curve",
  "eth-bn254-keystore",
  "eth-keystore",
  "ethers",
@@ -4496,8 +4497,9 @@ dependencies = [
  "structopt",
  "thiserror",
  "tls-server-fixture",
+ "tlsn-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn)",
  "tlsn-prover",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-verifier",
  "tokio",
  "tokio-native-tls",
@@ -6669,7 +6671,30 @@ dependencies = [
  "rs_merkle",
  "serde",
  "thiserror",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
+ "tlsn-utils 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
+ "web-time 0.2.4",
+ "webpki-roots 0.26.5",
+]
+
+[[package]]
+name = "tlsn-core"
+version = "0.1.0-alpha.6"
+source = "git+https://github.com/OpacityLabs/tlsn#9ab28b6f1e2a11b06d19e148113841566667da83"
+dependencies = [
+ "bimap",
+ "bytes",
+ "getrandom",
+ "mpz-circuits",
+ "mpz-core",
+ "mpz-garble-core",
+ "opaque-debug",
+ "p256",
+ "ring 0.17.8",
+ "rs_merkle",
+ "serde",
+ "thiserror",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn)",
  "tlsn-utils 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
  "web-time 0.2.4",
  "webpki-roots 0.26.5",
@@ -6684,7 +6709,7 @@ dependencies = [
  "serde",
  "spansy",
  "thiserror",
- "tlsn-core",
+ "tlsn-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-utils 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
 ]
 
@@ -6757,11 +6782,11 @@ dependencies = [
  "serio",
  "thiserror",
  "tlsn-common",
- "tlsn-core",
+ "tlsn-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-formats",
  "tlsn-tls-client",
  "tlsn-tls-client-async",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-tls-mpc",
  "tlsn-utils 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
  "tlsn-utils-aio 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
@@ -6797,7 +6822,7 @@ dependencies = [
  "async-trait",
  "futures",
  "thiserror",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
 ]
 
 [[package]]
@@ -6818,7 +6843,7 @@ dependencies = [
  "sct",
  "sha2",
  "tlsn-tls-backend",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "web-time 0.2.4",
  "webpki",
 ]
@@ -6840,6 +6865,25 @@ dependencies = [
 name = "tlsn-tls-core"
 version = "0.1.0-alpha.6"
 source = "git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6#3554db83e17b2e5fc98293b397a2907b7f023496"
+dependencies = [
+ "futures",
+ "hmac",
+ "rand",
+ "ring 0.17.8",
+ "rustls-pemfile 1.0.4",
+ "sct",
+ "serde",
+ "sha2",
+ "thiserror",
+ "tracing",
+ "web-time 0.2.4",
+ "webpki",
+]
+
+[[package]]
+name = "tlsn-tls-core"
+version = "0.1.0-alpha.6"
+source = "git+https://github.com/OpacityLabs/tlsn#9ab28b6f1e2a11b06d19e148113841566667da83"
 dependencies = [
  "futures",
  "hmac",
@@ -6882,7 +6926,7 @@ dependencies = [
  "tlsn-key-exchange",
  "tlsn-stream-cipher",
  "tlsn-tls-backend",
- "tlsn-tls-core",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-universal-hash",
  "tlsn-utils-aio 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
  "tracing",
@@ -6985,8 +7029,8 @@ dependencies = [
  "signature",
  "thiserror",
  "tlsn-common",
- "tlsn-core",
- "tlsn-tls-core",
+ "tlsn-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
+ "tlsn-tls-core 0.1.0-alpha.6 (git+https://github.com/OpacityLabs/tlsn.git?tag=v0.1.0-alpha.6)",
  "tlsn-tls-mpc",
  "tlsn-utils-aio 0.1.0 (git+https://github.com/tlsnotary/tlsn-utils?rev=45370cc)",
  "tracing",

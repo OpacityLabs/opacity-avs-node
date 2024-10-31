@@ -3,7 +3,7 @@ use structopt::StructOpt;
 use tracing::debug;
 
 use opacity_avs_node::{
-    init_tracing, parse_config_file, parse_operator_config_file, run_server,
+    init_tracing, parse_config_file, parse_operator_config_file, run_server, run_verifier,
     validate_operator_config, CliFields, NotaryServerError, NotaryServerProperties,
     OperatorProperties,
 };
@@ -24,5 +24,6 @@ async fn main() -> Result<(), NotaryServerError> {
     debug!("Opacity node config loaded");
     // Run the server
     run_server(&notary_config, &operator_config).await?;
+    run_verifier(&notary_config).await?;
     Ok(())
 }
