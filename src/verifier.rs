@@ -30,7 +30,7 @@ pub struct InfoResponse {
 
 #[derive(Clone)]
 struct AppState {
-    config: &NotaryServerProperties,
+    config: NotaryServerProperties,
 }
 
 // New function to handle the verification request
