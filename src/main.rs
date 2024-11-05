@@ -23,7 +23,11 @@ async fn main() -> Result<(), NotaryServerError> {
     init_tracing(&notary_config).map_err(|err| eyre!("Failed to set up tracing: {err}"))?;
     debug!("Opacity node config loaded");
     // Run the server
-    run_server(&notary_config, &operator_config).await?;
-    run_verifier(&notary_config).await?;
+    println!("Loading server");
+    let s = run_server(&notary_config, &operator_config);
+    println!("Loadinging verifier");
+    let v = run_verifier(&notary_config);
+    println!("running server and verifier");
+    futures::join!(s, v);
     Ok(())
 }

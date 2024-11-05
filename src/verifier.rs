@@ -14,6 +14,7 @@ use crate::{
     config::{NotaryServerProperties, NotarySigningKeyProperties},
 };
 use eyre::{eyre, Result};
+use tracing::{debug, error, info};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -90,7 +91,7 @@ pub async fn run_verifier(config: &NotaryServerProperties) -> eyre::Result<()> {
         .route("/verify", post(verify_proof))
         .with_state(state);
 
-    println!("Starting verifier server on port 6074...");
+    info!("Starting verifier server on port 6074...");
     
     axum::serve(
         tokio::net::TcpListener::bind("0.0.0.0:6074").await?,
