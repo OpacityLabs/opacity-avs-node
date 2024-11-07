@@ -12,9 +12,17 @@ use tlsn_core::proof::{SessionProof, TlsProof};
 use crate::{
     bn254::{self, BN254Signature, BN254SigningKey},
     config::{NotaryServerProperties, NotarySigningKeyProperties},
+    wallet::load_operator_bls_key,
+    CliFields,
+    OperatorProperties,
+    validate_operator_config,
+    parse_operator_config_file,
 };
+
 use eyre::{eyre, Result};
 use tracing::{debug, error, info};
+use ark_bn254::G1Affine;
+use ark_ec::{AffineRepr, CurveGroup};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -81,6 +89,9 @@ async fn verify_proof(
         String::from_utf8_lossy(recv.data())
     );
 
+    let signature = sign(&response).unwrap();    
+    debug!("Signature: {:?}", signature);
+
     Ok(Json(response))
 }
 
@@ -101,4 +112,38 @@ pub async fn run_verifier(config: &NotaryServerProperties) -> eyre::Result<()> {
     .map_err(|e| eyre::eyre!("Server error: {}", e))?;
 
     Ok(())
+}
+
+pub fn sign(message: &str) -> Result<BN254Signature> {
+    
+    let operator_config: OperatorProperties =
+        parse_operator_config_file("config/opacity.config.yaml")?; //i sthere a better way than hard coding this?
+
+    validate_operator_config(&operator_config).unwrap_or_else(|err| {
+        panic!("Invalid operator config: {}", err);
+    });
+
+    let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
+        panic!("OPERATOR_BLS_KEY_PASSWORD not set in environment variable");
+    });
+
+    let bls_keystore_path = operator_config
+        .operator_bls_keystore_path
+        .clone()
+        .unwrap_or_else(|| {
+            panic!("operator_bls_keystore_path not set in operator config file");
+        });
+
+    let operator_bls_key: BN254SigningKey =
+        load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
+            panic!("Unable to decrypt operator BLS keystore: {:?}", err);
+        });
+    
+    let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
+
+    debug!("Signing result with BN254 key");
+    let message_bytes = message.as_bytes();
+    let signature: BN254Signature = bn254::sign(operator_bls_key, message_bytes.clone())?;
+
+    Ok(signature)
 }
