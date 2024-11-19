@@ -89,8 +89,13 @@ async fn verify_proof(
         String::from_utf8_lossy(recv.data())
     );
 
-    let signature = sign(&response).unwrap();    
-    debug!("Signature: {:?}", signature);
+    // this needs to be an input form the client... but not sure how it should be done
+    if String::from_utf8_lossy(recv.data()).contains("\"monday\":{\"open_time\":\"08:00\",\"close_time\":\"23:59\"}") {
+        let signature = sign(&response).unwrap();    
+        debug!("Signature: {:?}", signature);
+    } else {
+        error!("Invalid response: {:?}", response);
+    }
 
     Ok(Json(response))
 }
@@ -141,7 +146,7 @@ pub fn sign(message: &str) -> Result<BN254Signature> {
     
     let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
 
-    debug!("Signing result with BN254 key");
+    debug!("Signing result with BN254 key{:?}", bn254_public_key_g1);
     let message_bytes = message.as_bytes();
     let signature: BN254Signature = bn254::sign(operator_bls_key, message_bytes.clone())?;
 
