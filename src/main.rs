@@ -1,9 +1,9 @@
 use eyre::{eyre, Result};
 use structopt::StructOpt;
-use tracing::debug;
+use tracing::{info, debug};
 
 use opacity_avs_node::{
-    init_tracing, parse_config_file, parse_operator_config_file, run_server,
+    init_tracing, parse_config_file, parse_operator_config_file, run_server, run_verifier,
     validate_operator_config, CliFields, NotaryServerError, NotaryServerProperties,
     OperatorProperties,
 };
@@ -23,6 +23,11 @@ async fn main() -> Result<(), NotaryServerError> {
     init_tracing(&notary_config).map_err(|err| eyre!("Failed to set up tracing: {err}"))?;
     debug!("Opacity node config loaded");
     // Run the server
-    run_server(&notary_config, &operator_config).await?;
+    debug!("Loading server");
+    let s = run_server(&notary_config, &operator_config);
+    debug!("Loadinging verifier");
+    let v = run_verifier(&notary_config);
+    info!("running server and verifier");
+    futures::join!(s, v);
     Ok(())
 }
