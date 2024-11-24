@@ -37,6 +37,20 @@ pub struct InfoResponse {
     pub git_commit_timestamp: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VerificationRequest {
+    pub tls_proof: TlsProof,
+    pub address: String,
+    pub platform: String,
+    pub resource: String,
+    pub value: String,
+    pub threshold: u64,
+    pub signature: String,
+    pub node_url: String,
+    pub timestamp: i32,
+    pub node_selector_signature: String,
+}
+
 #[derive(Clone)]
 struct AppState {
     config: NotaryServerProperties,
@@ -45,7 +59,7 @@ struct AppState {
 // New function to handle the verification request
 async fn verify_proof(
     State(state): State<Arc<AppState>>,
-    Json(proof): Json<TlsProof>,
+    Json(request): Json<VerificationRequest>,
 ) -> Result<Json<String>, (axum::http::StatusCode, String)> {
     let notary_public_key_string = std::fs::read_to_string(&state.config.notary_key.public_key_pem_path)
         .map_err(|err| (
@@ -59,7 +73,7 @@ async fn verify_proof(
             format!("Failed to parse notary public key: {err}")
         ))?;
 
-    let TlsProof { session, substrings } = proof;
+    let TlsProof { session, substrings } = request.tls_proof;
 
     // Verify the session proof
     session.verify_with_default_cert_verifier(notary_public_key)
