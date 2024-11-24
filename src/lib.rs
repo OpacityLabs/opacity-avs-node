@@ -9,6 +9,7 @@ mod service;
 mod util;
 mod wallet;
 mod verifier;
+pub mod commitment_parser;
 
 pub use bn254::vec_to_fr;
 pub use config::{
