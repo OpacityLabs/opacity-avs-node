@@ -17,6 +17,7 @@ use crate::{
     OperatorProperties,
     validate_operator_config,
     parse_operator_config_file,
+    commitment_parser::Commitment,
 };
 
 use eyre::{eyre, Result};
@@ -103,9 +104,43 @@ async fn verify_proof(
         String::from_utf8_lossy(recv.data())
     );
 
-    let signature = sign(&response).unwrap();    
-    debug!("Signature: {:?}", signature);
 
+
+    // Create commitment from request fields
+    let commitment = Commitment {
+        signature: request.signature,
+        address: request.address,
+        platform: request.platform,
+        resource: request.resource,
+        value: request.value,
+        threshold: request.threshold,  // Convert u64 to i32
+    };
+
+    let message = format!("{}{}{}{}", commitment.platform, commitment.resource, commitment.value, commitment.threshold);
+
+    // Verify the commitment signature
+    if !commitment.verify_signature(&message, &commitment.signature, &commitment.address).map_err(|err| (
+        axum::http::StatusCode::BAD_REQUEST,
+        format!("Commitment signature verification failed: {err}")
+    ))? {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Invalid commitment signature".to_string()
+        ));
+    }
+    let commitment_hash = commitment.hash();
+    let node_selector_message = format!("{},{},{}", request.node_url, commitment_hash, request.timestamp);
+    if !commitment.verify_signature(&node_selector_message, &request.node_selector_signature, "0x8a2c56230E89C4636e5b7878541e66aBA2091FcD").map_err(|err| (
+        axum::http::StatusCode::BAD_REQUEST,
+        format!("Node selector signature verification failed: {err}")
+    ))? {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Invalid node selector signature".to_string()
+        ));
+    }
+    let signature = sign(&node_selector_message).unwrap();    
+    debug!("Signature: {:?}", signature);
     Ok(Json(response))
 }
 
