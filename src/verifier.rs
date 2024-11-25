@@ -1,22 +1,32 @@
+// External crates
 use axum::{
-    routing::post,
-    Router,
-    Json,
     extract::State,
+    routing::post,
+    Json,
+    Router,
 };
-use std::sync::Arc;
 use elliptic_curve::pkcs8::DecodePublicKey;
 use serde::{Deserialize, Serialize};
-use std::{str, time::Duration};
+use std::{
+    str,
+    sync::Arc,
+    time::Duration,
+};
 use tlsn_core::proof::{SessionProof, TlsProof};
+
+// Internal crates
 use crate::{
-    bn254::{self, BN254Signature, BN254SigningKey},
+    bn254::{
+        self,
+        BN254Signature,
+        BN254SigningKey,
+    },
+    commitment_parser::Commitment,
     config::NotaryServerProperties,
     wallet::load_operator_bls_key,
     OperatorProperties,
-    validate_operator_config,
     parse_operator_config_file,
-    commitment_parser::Commitment,
+    validate_operator_config,
 };
 
 use eyre::Result;
