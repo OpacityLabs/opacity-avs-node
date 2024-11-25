@@ -11,17 +11,16 @@ use std::{str, time::Duration};
 use tlsn_core::proof::{SessionProof, TlsProof};
 use crate::{
     bn254::{self, BN254Signature, BN254SigningKey},
-    config::{NotaryServerProperties, NotarySigningKeyProperties},
+    config::NotaryServerProperties,
     wallet::load_operator_bls_key,
-    CliFields,
     OperatorProperties,
     validate_operator_config,
     parse_operator_config_file,
     commitment_parser::Commitment,
 };
 
-use eyre::{eyre, Result};
-use tracing::{debug, error, info};
+use eyre::Result;
+use tracing::{debug, info};
 use ark_bn254::G1Affine;
 use ark_ec::{AffineRepr, CurveGroup};
 
@@ -129,14 +128,37 @@ async fn verify_proof(
         ));
     }
     let commitment_hash = commitment.hash();
+    let operator_config: OperatorProperties =
+    parse_operator_config_file("config/opacity.config.yaml").map_err(|err| (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        format!("Failed to parse operator config: {err}")
+    ))?;
+
+    validate_operator_config(&operator_config).map_err(|err| (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        format!("Failed to validate operator config: {err}")
+    ))?;
+    let opacity_node_selector_address = operator_config.opacity_node_selector_address;
     let node_selector_message = format!("{},{},{}", request.node_url, commitment_hash, request.timestamp);
-    if !commitment.verify_signature(&node_selector_message, &request.node_selector_signature, "0x8a2c56230E89C4636e5b7878541e66aBA2091FcD").map_err(|err| (
+    if !commitment.verify_signature(&node_selector_message, &request.node_selector_signature, &opacity_node_selector_address).map_err(|err| (
         axum::http::StatusCode::BAD_REQUEST,
         format!("Node selector signature verification failed: {err}")
     ))? {
         return Err((
             axum::http::StatusCode::BAD_REQUEST,
             "Invalid node selector signature".to_string()
+        ));
+    }
+    // Check if the commitment timestamp is within 5 minutes
+    let current_timestamp = chrono::Utc::now().timestamp();
+    let time_diff = current_timestamp - request.timestamp as i64;
+    let max_time_diff = std::env::var("MAX_TIME_DIFF_SECONDS")
+        .map(|v| v.parse::<i64>().unwrap_or(60))
+        .unwrap_or(60); // Default to 60 seconds (1 minute) if env var not set
+    if time_diff > max_time_diff {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            format!("Commitment timestamp is too old (more than {} seconds)", max_time_diff)
         ));
     }
     let signature = sign(&node_selector_message).unwrap();    
