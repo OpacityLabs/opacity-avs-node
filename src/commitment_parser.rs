@@ -3,7 +3,6 @@ use ethers::types::{Signature, H160};
 use ethers::utils::hash_message;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Map, json};
-use std::fs;
 use std::str::FromStr;
 use eyre::Error;
 
@@ -72,10 +71,6 @@ impl Commitment {
         json_str.push('}');
         
         let commitment_bytes = json_str.as_bytes();
-        
-        // Print exact bytes for debugging
-        println!("Bytes to hash: {:?}", String::from_utf8_lossy(commitment_bytes).as_bytes());
-        println!("String to hash: {}", json_str);
         
         // Calculate keccak256 hash
         let hash = ethers::utils::keccak256(commitment_bytes);
