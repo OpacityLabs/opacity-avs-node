@@ -81,7 +81,7 @@ async fn verify_proof(
     sent.set_redacted(b'X');
     recv.set_redacted(b'X');
 
-    let response = format!(
+    let mut response = format!(
         "Verified session with {:?} at {}.\nSent: {}\nReceived: {}",
         session_info.server_name,
         time,
@@ -93,6 +93,7 @@ async fn verify_proof(
     if String::from_utf8_lossy(recv.data()).contains("\"monday\":{\"open_time\":\"08:00\",\"close_time\":\"23:59\"}") {
         let signature = sign(&response).unwrap();    
         debug!("Signature: {:?}", signature);
+        response.push_str(&format!(" \n{:?}", signature));
     } else {
         error!("Invalid response: {:?}", response);
     }
@@ -119,10 +120,10 @@ pub async fn run_verifier(config: &NotaryServerProperties) -> eyre::Result<()> {
     Ok(())
 }
 
-pub fn sign(message: &str) -> Result<BN254Signature> {
+pub fn sign(message: &str) -> Result<String> {
     
     let operator_config: OperatorProperties =
-        parse_operator_config_file("config/opacity.config.yaml")?; //i sthere a better way than hard coding this?
+        parse_operator_config_file("config/opacity.config.yaml")?; //is there a better way than hard coding this?
 
     validate_operator_config(&operator_config).unwrap_or_else(|err| {
         panic!("Invalid operator config: {}", err);
@@ -150,5 +151,11 @@ pub fn sign(message: &str) -> Result<BN254Signature> {
     let message_bytes = message.as_bytes();
     let signature: BN254Signature = bn254::sign(operator_bls_key, message_bytes.clone())?;
 
-    Ok(signature)
+    let result = format!(
+        "PublicKey: {:?}, Signature: {:?}", 
+        bn254_public_key_g1,
+        signature
+    );
+
+    Ok(result)
 }
