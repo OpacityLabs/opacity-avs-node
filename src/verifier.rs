@@ -33,20 +33,6 @@ use eyre::Result;
 use tracing::{debug, info};
 use ark_bn254::G1Affine;
 use ark_ec::{AffineRepr, CurveGroup};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct InfoResponse {
-    /// Current version of notary-server
-    pub version: String,
-    /// Public key of the notary signing key
-    pub public_key: String,
-    /// Current git commit hash of notary-server
-    pub git_commit_hash: String,
-    /// Current git commit timestamp of notary-server
-    pub git_commit_timestamp: String,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VerificationRequest {
     pub tls_proof: TlsProof,
