@@ -1,40 +1,50 @@
+// External crates
 use axum::{
-    routing::post,
-    Router,
-    Json,
     extract::State,
+    routing::post,
+    Json,
+    Router,
 };
-use std::sync::Arc;
 use elliptic_curve::pkcs8::DecodePublicKey;
 use serde::{Deserialize, Serialize};
-use std::{str, time::Duration};
+use std::{
+    str,
+    sync::Arc,
+    time::Duration,
+};
 use tlsn_core::proof::{SessionProof, TlsProof};
+
+// Internal crates
 use crate::{
-    bn254::{self, BN254Signature, BN254SigningKey},
-    config::{NotaryServerProperties, NotarySigningKeyProperties},
+    bn254::{
+        self,
+        BN254Signature,
+        BN254SigningKey,
+    },
+    commitment_parser::Commitment,
+    config::NotaryServerProperties,
     wallet::load_operator_bls_key,
-    CliFields,
     OperatorProperties,
-    validate_operator_config,
     parse_operator_config_file,
+    validate_operator_config,
 };
 
-use eyre::{eyre, Result};
-use tracing::{debug, error, info};
+use eyre::Result;
+use tracing::{debug, info};
 use ark_bn254::G1Affine;
 use ark_ec::{AffineRepr, CurveGroup};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct InfoResponse {
-    /// Current version of notary-server
-    pub version: String,
-    /// Public key of the notary signing key
-    pub public_key: String,
-    /// Current git commit hash of notary-server
-    pub git_commit_hash: String,
-    /// Current git commit timestamp of notary-server
-    pub git_commit_timestamp: String,
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VerificationRequest {
+    pub tls_proof: TlsProof,
+    pub address: String,
+    pub platform: String,
+    pub resource: String,
+    pub value: String,
+    pub threshold: u64,
+    pub signature: String,
+    pub node_url: String,
+    pub timestamp: i32,
+    pub node_selector_signature: String,
 }
 
 #[derive(Clone)]
@@ -45,7 +55,7 @@ struct AppState {
 // New function to handle the verification request
 async fn verify_proof(
     State(state): State<Arc<AppState>>,
-    Json(proof): Json<TlsProof>,
+    Json(request): Json<VerificationRequest>,
 ) -> Result<Json<String>, (axum::http::StatusCode, String)> {
     let notary_public_key_string = std::fs::read_to_string(&state.config.notary_key.public_key_pem_path)
         .map_err(|err| (
@@ -59,7 +69,7 @@ async fn verify_proof(
             format!("Failed to parse notary public key: {err}")
         ))?;
 
-    let TlsProof { session, substrings } = proof;
+    let TlsProof { session, substrings } = request.tls_proof;
 
     // Verify the session proof
     session.verify_with_default_cert_verifier(notary_public_key)
@@ -89,9 +99,66 @@ async fn verify_proof(
         String::from_utf8_lossy(recv.data())
     );
 
-    let signature = sign(&response).unwrap();    
-    debug!("Signature: {:?}", signature);
 
+
+    // Create commitment from request fields
+    let commitment = Commitment {
+        signature: request.signature,
+        address: request.address,
+        platform: request.platform,
+        resource: request.resource,
+        value: request.value,
+        threshold: request.threshold,  // Convert u64 to i32
+    };
+
+    let message = format!("{}{}{}{}", commitment.platform, commitment.resource, commitment.value, commitment.threshold);
+
+    // Verify the commitment signature
+    if !commitment.verify_signature(&message, &commitment.signature, &commitment.address).map_err(|err| (
+        axum::http::StatusCode::BAD_REQUEST,
+        format!("Commitment signature verification failed: {err}")
+    ))? {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Invalid commitment signature".to_string()
+        ));
+    }
+    let commitment_hash = commitment.hash();
+    let operator_config: OperatorProperties =
+    parse_operator_config_file("config/opacity.config.yaml").map_err(|err| (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        format!("Failed to parse operator config: {err}")
+    ))?;
+
+    validate_operator_config(&operator_config).map_err(|err| (
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+        format!("Failed to validate operator config: {err}")
+    ))?;
+    let opacity_node_selector_address = operator_config.opacity_node_selector_address;
+    let node_selector_message = format!("{},{},{}", request.node_url, commitment_hash, request.timestamp);
+    if !commitment.verify_signature(&node_selector_message, &request.node_selector_signature, &opacity_node_selector_address).map_err(|err| (
+        axum::http::StatusCode::BAD_REQUEST,
+        format!("Node selector signature verification failed: {err}")
+    ))? {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Invalid node selector signature".to_string()
+        ));
+    }
+    // Check if the commitment timestamp is within 5 minutes
+    let current_timestamp = chrono::Utc::now().timestamp();
+    let time_diff = current_timestamp - request.timestamp as i64;
+    let max_time_diff = std::env::var("MAX_TIME_DIFF_SECONDS")
+        .map(|v| v.parse::<i64>().unwrap_or(60))
+        .unwrap_or(60); // Default to 60 seconds (1 minute) if env var not set
+    if time_diff > max_time_diff {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            format!("Commitment timestamp is too old (more than {} seconds)", max_time_diff)
+        ));
+    }
+    let signature = sign(&node_selector_message).unwrap();    
+    debug!("Signature: {:?}", signature);
     Ok(Json(response))
 }
 
