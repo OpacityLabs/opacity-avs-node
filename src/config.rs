@@ -76,6 +76,7 @@ pub struct LoggingProperties {
 #[derive(Clone, Debug, Deserialize, Default)]
 pub struct OperatorProperties {
     pub production: bool,
+    pub opacity_node_selector_address: String,
     pub registry_coordinator_address: String,
     pub opacity_avs_address: String,
     pub avs_directory_address: String,

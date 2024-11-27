@@ -1,6 +1,7 @@
 #! This config is internal for the docker image, no need to modify it
 
 production: false
+opacity_node_selector_address: 0x8a2c56230E89C4636e5b7878541e66aBA2091FcD
 registry_coordinator_address: 0xeCd099fA5048c3738a5544347D8cBc8076E76494
 opacity_avs_address: 0xCE06c5fe42d22fF827A519396583Fd9f5176E3D3
 avs_directory_address: 0x135DDa560e946695d6f155dACaFC6f1F25C1F5AF
