@@ -10,6 +10,7 @@ mod util;
 mod wallet;
 mod verifier;
 pub mod commitment_parser;
+mod remote_bls_signer;
 
 pub use bn254::vec_to_fr;
 pub use config::{
