@@ -52,7 +52,7 @@ impl Commitment {
         Ok(recovered == address)
     }
 
-    pub fn hash(&self) -> String {
+    pub fn hash(&self) -> [u8; 32] {
         // Create a dictionary of the commitment data
         let commitment_dict = self.to_dict();
         
@@ -74,7 +74,7 @@ impl Commitment {
         
         // Calculate keccak256 hash
         let hash = ethers::utils::keccak256(commitment_bytes);
-        hex::encode(hash)
+        hash
     }
 }
 

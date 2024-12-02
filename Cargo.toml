@@ -71,6 +71,10 @@ eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+cerberus-api = {git ="https://github.com/Layr-Labs/cerberus-api"}
+tonic-build = "0.9"
+tonic = "0.9"
+
 lazy_static = "1.5.0"
 rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
     "std",
