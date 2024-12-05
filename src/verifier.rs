@@ -159,7 +159,9 @@ async fn verify_proof(
     }
     let signature = sign(commitment_hash).await.unwrap();   
     debug!("Signature: {:?}", signature);
-    response.push_str(&format!(" \n{:?}", signature));
+    let operator_id = operator_config.operator_id;
+    debug!("Operator ID: {:?}", operator_id);
+    response.push_str(&format!(" \n Signature: {:?} \n OperatorID: {:?}", signature, operator_id));
     Ok(Json(response))
 }
 
