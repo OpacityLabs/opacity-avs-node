@@ -34,22 +34,6 @@ fn get_etherscan_uri(chain_id: u32, tx_hash: &str) -> String {
     format!("{}{}", etherscan_url, tx_hash)
 }
 
-// #[derive(Debug, Deserialize)]
-// struct Config {
-//     production: bool,
-//     opacity_node_selector_address: String,
-//     registry_coordinator_address: String,
-//     opacity_avs_address: String,
-//     avs_directory_address: String,
-//     eigenlayer_delegation_manager: String,
-//     chain_id: u64,
-//     operator_address: String,
-//     eth_rpc_url: String,
-//     node_public_ip: String,
-//     operator_bls_keystore_path: Option<String>,
-//     operator_id: String,
-// }
-
 use eyre::Result;
 use lazy_static::lazy_static;
 use std::str::FromStr;
