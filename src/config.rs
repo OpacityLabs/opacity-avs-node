@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
@@ -73,7 +73,7 @@ pub struct LoggingProperties {
 }
 
 /// EigenLayer Operator Configuration
-#[derive(Clone, Debug, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct OperatorProperties {
     pub production: bool,
     pub opacity_node_selector_address: String,
@@ -86,6 +86,7 @@ pub struct OperatorProperties {
     pub node_public_ip: String,
     pub operator_address: String,
     pub operator_bls_keystore_path: Option<String>,
+    pub operator_id: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Default)]
