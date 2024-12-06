@@ -157,12 +157,7 @@ async fn verify_proof(
             format!("Commitment timestamp is too old (more than {} seconds)", max_time_diff)
         ));
     }
-<<<<<<< HEAD
-    let signature = sign(commitment_hash).await.unwrap();   
-    debug!("Signature: {:?}", signature);
-=======
     let signature = sign(commitment_hash).await.unwrap();
->>>>>>> a3c5cc1 (add: operator id to verification response)
     let operator_id = operator_config.operator_id;
     debug!("Operator ID: {:?}", operator_id);
     response.push_str(&format!(" \n Signature: {:?} \n OperatorID: {:?}", signature, operator_id));
