@@ -91,16 +91,6 @@ async fn verify_proof(
     sent.set_redacted(b'X');
     recv.set_redacted(b'X');
 
-    let mut response = format!(
-        "Verified session with {:?} at {}.\nSent: {}\nReceived: {}",
-        session_info.server_name,
-        time,
-        String::from_utf8_lossy(sent.data()),
-        String::from_utf8_lossy(recv.data())
-    );
-
-
-
     // Create commitment from request fields
     let commitment = Commitment {
         signature: request.signature,
@@ -160,7 +150,18 @@ async fn verify_proof(
     let signature = sign(commitment_hash).await.unwrap();
     let operator_id = operator_config.operator_id;
     debug!("Operator ID: {:?}", operator_id);
-    response.push_str(&format!(" \n Signature: {:?} \n OperatorID: {:?}", signature, operator_id));
+
+
+    let mut response = format!(
+        "Verified session with {:?} at {}.\nSent: {}\nReceived: {} \nSignature: {:?} \nOperatorID: {:?}",
+        session_info.server_name,
+        time,
+        String::from_utf8_lossy(sent.data()),
+        String::from_utf8_lossy(recv.data()),
+        signature,
+        operator_id
+    );
+
     Ok(Json(response))
 }
 
