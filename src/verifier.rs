@@ -153,13 +153,14 @@ async fn verify_proof(
 
 
     let mut response = format!(
-        "Verified session with {:?} at {}.\nSent: {}\nReceived: {} \nSignature: {:?} \nOperatorID: {:?}",
+        "Verified session with {:?} at {}.\nSent: {}\nReceived: {} \nSignature: {:?} \nOperatorID: {:?} \nCommitmentHash: {:?}",
         session_info.server_name,
         time,
         String::from_utf8_lossy(sent.data()),
         String::from_utf8_lossy(recv.data()),
         signature,
-        operator_id
+        operator_id,
+        hex::encode(commitment_hash)
     );
 
     Ok(Json(response))
