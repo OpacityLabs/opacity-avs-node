@@ -149,19 +149,19 @@ async fn verify_proof(
     }
     let signature = sign(commitment_hash).await.unwrap();
     let operator_id = operator_config.operator_id;
+    let operator_address = operator_config.operator_address;
     debug!("Operator ID: {:?}", operator_id);
+    debug!("Operator Address: {:?}", operator_address);
 
-
-    let mut response = format!(
-        "Verified session with {:?} at {}.\nSent: {}\nReceived: {} \nSignature: {:?} \nOperatorID: {:?} \nCommitmentHash: {:?}",
-        session_info.server_name,
-        time,
-        String::from_utf8_lossy(sent.data()),
-        String::from_utf8_lossy(recv.data()),
-        signature,
-        operator_id,
-        hex::encode(commitment_hash)
-    );
+    let response = serde_json::json!({
+        "server_name": session_info.server_name,
+        "time": current_timestamp.to_string(),
+        "sent": String::from_utf8_lossy(sent.data()),
+        "received": String::from_utf8_lossy(recv.data()),
+        "signature": signature.to_string(),
+        "operator_address": operator_address,
+        "commitment_hash": hex::encode(commitment_hash)
+    }).to_string();
 
     Ok(Json(response))
 }
