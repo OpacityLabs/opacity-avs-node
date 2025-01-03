@@ -187,17 +187,6 @@ pub async fn run_verifier(config: &NotaryServerProperties) -> eyre::Result<()> {
 
 pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
     
-    let operator_config: OperatorProperties =
-        parse_operator_config_file("config/opacity.config.yaml")?; //is there a better way than hard coding this?
-
-    validate_operator_config(&operator_config).unwrap_or_else(|err| {
-        panic!("Invalid operator config: {}", err);
-    });
-
-    let bls_keystore_path = operator_config.operator_bls_keystore_path.clone().unwrap_or_else(|| {
-        panic!("operator_bls_keystore_path not set in operator config file");
-    });
-    
     let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
         panic!("OPERATOR_BLS_KEY_PASSWORD not set in environment variable");
     });
@@ -208,17 +197,6 @@ pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
         .map_err(|e| eyre::eyre!("Failed to read BLS identifier file: {}", e))?;
     let signature: BN254Signature = get_signature(&bls_identifier, message, &bls_password, signer_endpoint).await?;
 
-
-    let operator_bls_key: BN254SigningKey =
-        load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
-            panic!("Unable to decrypt operator BLS keystore: {:?}", err);
-        });
-    
-    let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
-
-    debug!("Signing result with BN254 key {:?}", bn254_public_key_g1);
-    let signature_classic: BN254Signature = bn254::sign(operator_bls_key, &message)?;
-    debug!("Signature classic: {:?}", signature_classic);
     debug!("Signature: {:?}", signature);
-    Ok(signature_classic)
+    Ok(signature)
 }
