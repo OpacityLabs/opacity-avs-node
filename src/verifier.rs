@@ -206,8 +206,8 @@ pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
     });
     let bls_identifier = std::fs::read_to_string("config/remote.bls.identifier")
         .map_err(|e| eyre::eyre!("Failed to read BLS identifier file: {}", e))?;
+    println!("BLS identifier: {:?}", bls_identifier);
     let signature: BN254Signature = get_signature(&bls_identifier, message, &bls_password, signer_endpoint).await?;
-
 
     let operator_bls_key: BN254SigningKey =
         load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
@@ -215,10 +215,11 @@ pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
         });
     
     let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
-
+    debug!("sk: {:?}", operator_bls_key);
+    debug!("G1Affine generator: {:?}", G1Affine::generator());
     debug!("Signing result with BN254 key {:?}", bn254_public_key_g1);
     let signature_classic: BN254Signature = bn254::sign(operator_bls_key, &message)?;
     debug!("Signature classic: {:?}", signature_classic);
     debug!("Signature: {:?}", signature);
-    Ok(signature_classic)
+    Ok(signature)
 }
