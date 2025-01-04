@@ -45,6 +45,7 @@ pub struct VerificationRequest {
     pub node_url: String,
     pub timestamp: i32,
     pub node_selector_signature: String,
+    pub task_index: u64,
 }
 
 #[derive(Clone)]
@@ -154,6 +155,7 @@ async fn verify_proof(
     debug!("Operator Address: {:?}", operator_address);
 
     let response = serde_json::json!({
+        "task_index": request.task_index,
         "server_name": session_info.server_name,
         "time": current_timestamp.to_string(),
         "sent": String::from_utf8_lossy(sent.data()),
