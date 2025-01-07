@@ -161,6 +161,7 @@ async fn verify_proof(
         "sent": String::from_utf8_lossy(sent.data()),
         "received": String::from_utf8_lossy(recv.data()),
         "signature": signature.to_string(),
+        "operator_id": operator_id,
         "operator_address": operator_address,
         "commitment_hash": hex::encode(commitment_hash)
     }).to_string();
