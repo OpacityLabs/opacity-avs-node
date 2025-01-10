@@ -30,6 +30,7 @@ use std::{
     pin::Pin,
     sync::{Arc, Mutex},
 };
+use tlsn_core::CryptoProvider;
 use tokio::{fs::File, net::TcpListener};
 use tokio_rustls::TlsAcceptor;
 use tower_http::cors::CorsLayer;
@@ -47,6 +48,7 @@ use crate::{
     error::NotaryServerError,
     middleware::AuthorizationMiddleware,
     service::{initialize, upgrade_protocol},
+    signing::AttestationKey,
     util::parse_csv_file,
     wallet::load_operator_bls_key,
     OperatorProperties,
@@ -59,7 +61,8 @@ pub async fn run_server(
     operator: &OperatorProperties,
 ) -> Result<(), NotaryServerError> {
     // Load the private key for notarized transcript signing
-    let notary_signing_key = load_notary_signing_key(&config.notary_key).await?;
+    let attestation_key = load_attestation_key(&config.notary_key).await?;
+    let crypto_provider = build_crypto_provider(attestation_key);
     let operator_address = operator.operator_address.clone();
 
     let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
@@ -274,15 +277,31 @@ pub async fn run_server(
 }
 
 /// Load notary signing key from static file
-async fn load_notary_signing_key(config: &NotarySigningKeyProperties) -> Result<SigningKey> {
+
+fn build_crypto_provider(attestation_key: AttestationKey) -> CryptoProvider {
+    let mut provider = CryptoProvider::default();
+    provider.signer.set_signer(attestation_key.into_signer());
+    provider
+}
+
+/// Load notary signing key for attestations from static file
+async fn load_attestation_key(config: &NotarySigningKeyProperties) -> Result<AttestationKey> {
     debug!("Loading notary server's signing key");
-    let public_key = VerifyingKey::read_public_key_pem_file(&config.public_key_pem_path)
-        .map_err(|err| eyre!("Failed to load notary public key: {err}"))?;
-    let notary_signing_key = SigningKey::read_pkcs8_pem_file(&config.private_key_pem_path)
+
+    let mut file = File::open(&config.private_key_pem_path).await?;
+    let mut pem = String::new();
+    file.read_to_string(&mut pem)
+        .await
+        .map_err(|_| eyre!("pem file does not contain valid UTF-8"))?;
+
+    let key = AttestationKey::from_pkcs8_pem(&pem)
         .map_err(|err| eyre!("Failed to load notary signing key for notarization: {err}"))?;
 
+    pem.zeroize();
+
     debug!("Successfully loaded notary server's signing key!");
-    Ok(notary_signing_key)
+
+    Ok(key)
 }
 
 fn sign_notary_public_key(

@@ -34,15 +34,15 @@ structopt = "0.3.26"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
 tokio-rustls = { version = "0.24.1" }
-tokio-util = { version = "0.7", features = ["compat"] }
-tower = { version = "0.4.12", features = ["make"] }
+tower = { version = "0.4", features = ["make"] }
 tower-http = { version = "0.5", features = ["cors"] }
-tower-service = "0.3.2"
+tower-service = { version = "0.3" }
+tower-util = { version = "0.3.1" }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 ws_stream_tungstenite = { version = "0.13.0", features = ["tokio_io"] }
-tlsn-verifier = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
+# tlsn-verifier = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-verifier" }
 ethers = "2.0.14"
 reqwest = "0.12.5"
 urlencoding = "2.1.3"
@@ -64,14 +64,26 @@ alloy-rlp = "0.3.4"
 web3 = "0.19.0"
 clap = { version = "4.4", features = ["derive"] }
 
+elliptic-curve = { version = "0.13.5", features = ["pkcs8"] }
 
-eigen-client-avsregistry = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
-eigen-client-elcontracts = {git = "https://github.com/Layr-Labs/eigensdk-rs/"}
+tokio-util = "0.7"
+
+
+notary-client = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "notary-client" }
+tlsn-common = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-common" }
+tlsn-core = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-core" }
+tlsn-prover = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-prover" }
+tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-verifier" }
+tlsn-utils = { git = "https://github.com/tlsnotary/tlsn-utils", rev = "e7b2db6" }
+tlsn-formats = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-formats" }
+
+eigen-client-avsregistry = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
+eigen-client-elcontracts = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-logging = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-testing-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-crypto-bls = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
 eigen-utils = { git = "https://github.com/Layr-Labs/eigensdk-rs/" }
-cerberus-api = {git ="https://github.com/Layr-Labs/cerberus-api"}
+cerberus-api = { git = "https://github.com/Layr-Labs/cerberus-api" }
 tonic-build = "0.9"
 tonic = "0.9"
 
@@ -79,24 +91,28 @@ lazy_static = "1.5.0"
 rust-bls-bn254 = { git = "https://github.com/Layr-Labs/rust-bls-bn254.git", rev = "be3ef87", features = [
     "std",
 ] }
-tlsn-core = { git = "https://github.com/OpacityLabs/tlsn", package = "tlsn-core" }
-elliptic-curve = { version = "0.13.5", features = ["pkcs8"] }
-
+# tlsn-core = { git = "https://github.com/OpacityLabs/tlsn", package = "tlsn-core" }
+k256 = { version = "0.13" }
+pkcs8 = { version = "0.10" }
 eth-keystore = "0.5.0"
 hex = "0.4"
-rand = "0.8"  # Or latest version
+rand = "0.8"                 # Or latest version
+dotenv = "0.15.0"
 
-[dev-dependencies]
-# specify vendored feature to use statically linked copy of OpenSSL
-hyper-tls = { version = "0.5.0", features = ["vendored"] }
-tlsn-prover = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-prover" }
-tls-server-fixture = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tls-server-fixture" }
-tls-core = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "tlsn-tls-core" }
 
-notary-client = { git = "https://github.com/OpacityLabs/tlsn.git", tag = "v0.1.0-alpha.6", package = "notary-client" }
-tokio-native-tls = { version = "0.3.1", features = ["vendored"] }
-http-body-util = "0.1"
-eyre = "0.6.8"
+# [dev-dependencies]
+# # specify vendored feature to use statically linked copy of OpenSSL
+# hyper-tls = { version = "0.5.0", features = ["vendored"] }
+# notary-client = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "notary-client" }
+# tlsn-common = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-common" }
+# tlsn-core = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-core" }
+# tlsn-prover = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-prover" }
+# tlsn-verifier = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-verifier" }
+# tlsn-utils = { git = "https://github.com/tlsnotary/tlsn-utils", rev = "e7b2db6" }
+# tlsn-formats = { git = "https://github.com/tlsnotary/tlsn.git", tag = "v0.1.0-alpha.7", package = "tlsn-formats" }
+# tokio-native-tls = { version = "0.3.1", features = ["vendored"] }
+# http-body-util = "0.1"
+# eyre = "0.6.8"
 
 
 [[bin]]

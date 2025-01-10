@@ -8,7 +8,7 @@ mod server_tracing;
 mod service;
 mod util;
 mod wallet;
-mod verifier;
+// mod verifier;
 pub mod commitment_parser;
 mod remote_bls_signer;
 
@@ -22,8 +22,9 @@ pub use domain::{
     cli::CliFields,
     notary::{ClientType, NotarizationSessionRequest, NotarizationSessionResponse},
 };
+mod signing;
 pub use error::NotaryServerError;
 pub use server::{read_pem_file, run_server};
 pub use server_tracing::init_tracing;
 pub use util::{parse_config_file, parse_operator_config_file, validate_operator_config};
-pub use verifier::run_verifier;
+// pub use verifier::run_verifier;

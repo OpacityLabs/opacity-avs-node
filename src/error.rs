@@ -5,7 +5,7 @@ use axum::{
 use eyre::Report;
 use std::{error::Error, fmt};
 
-use tlsn_verifier::tls::{VerifierConfigBuilderError, VerifierError};
+use tlsn_verifier::{VerifierConfigBuilderError, VerifierError};
 
 #[derive(Debug, thiserror::Error)]
 pub enum NotaryServerError {

@@ -1,6 +1,6 @@
 use eyre::{eyre, Result};
 use structopt::StructOpt;
-use tracing::{info, debug};
+use tracing::{debug, info};
 
 use opacity_avs_node::{
     init_tracing, parse_config_file, parse_operator_config_file, run_server, run_verifier,
@@ -8,8 +8,12 @@ use opacity_avs_node::{
     OperatorProperties,
 };
 
+use dotenv::dotenv;
+
 #[tokio::main]
 async fn main() -> Result<(), NotaryServerError> {
+    // Load environment variables from .env
+    dotenv().ok();
     // Load command line arguments which contains the config file location
     let cli_fields: CliFields = CliFields::from_args();
     let notary_config: NotaryServerProperties = parse_config_file(&cli_fields.config_file)?;

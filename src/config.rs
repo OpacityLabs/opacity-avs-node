@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
@@ -29,8 +29,10 @@ pub struct AuthorizationProperties {
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct NotarizationProperties {
-    /// Global limit for maximum transcript size in bytes
-    pub max_transcript_size: usize,
+    /// Global limit for maximum number of bytes that can be sent
+    pub max_sent_data: usize,
+    /// Global limit for maximum number of bytes that can be received
+    pub max_recv_data: usize,
 }
 
 #[derive(Clone, Debug, Deserialize, Default)]
@@ -40,8 +42,9 @@ pub struct ServerProperties {
     pub name: String,
     pub host: String,
     pub port: u16,
-    /// Static html response returned from API root endpoint "/". Default html response contains
-    /// placeholder strings that will be replaced with actual values in server.rs, e.g. {version}, {public_key}
+    /// Static html response returned from API root endpoint "/". Default html
+    /// response contains placeholder strings that will be replaced with
+    /// actual values in server.rs, e.g. {version}, {public_key}
     pub html_info: String,
 }
 
@@ -64,15 +67,14 @@ pub struct NotarySigningKeyProperties {
 #[derive(Clone, Debug, Deserialize, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct LoggingProperties {
-    /// Log verbosity level of the default filtering logic, which is notary_server=<level>,tlsn_verifier=<level>,tls_mpc=<level>
-    /// Must be either of <https://docs.rs/tracing/latest/tracing/struct.Level.html#implementations>
+    /// Log verbosity level of the default filtering logic, which is
+    /// notary_server=<level>,tlsn_verifier=<level>,tls_mpc=<level> Must be either of <https://docs.rs/tracing/latest/tracing/struct.Level.html#implementations>
     pub level: String,
     /// Custom filtering logic, refer to the syntax here https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#example-syntax
     /// This will override the default filtering logic above
     pub filter: Option<String>,
 }
 
-/// EigenLayer Operator Configuration
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct OperatorProperties {
     pub production: bool,

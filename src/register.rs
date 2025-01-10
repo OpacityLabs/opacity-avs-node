@@ -1,28 +1,28 @@
 //! register operator in quorum with avs registry coordinator
 use alloy_primitives::U256;
-use alloy_primitives::{Bytes, FixedBytes,Address};
+use alloy_primitives::{Address, Bytes, FixedBytes};
 use alloy_provider::Provider;
 use alloy_signer_local::PrivateKeySigner;
-use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_avsregistry::reader::AvsRegistryChainReader;
+use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
 use eigen_client_elcontracts::reader::ELChainReader;
 use eigen_crypto_bls::BlsKeyPair;
 use eigen_logging::get_test_logger;
 use eigen_utils::get_provider;
-use serde::Deserialize;
-use std::{fs,env,path::Path};
+use eth_bn254_keystore;
 use eth_keystore::decrypt_key;
 use hex;
-use rand::Rng;        
-use eth_bn254_keystore;
 use num_bigint::BigUint;
 use opacity_avs_node::OperatorProperties;
+use rand::Rng;
+use serde::Deserialize;
+use std::{env, fs, path::Path};
 
 fn generate_random_bytes() -> FixedBytes<32> {
     let mut rng = rand::thread_rng();
-    let mut random_bytes = [0u8; 32];  // A 32-byte array initialized to zeros
-    rng.fill(&mut random_bytes);       // Fill the array with random bytes
-    FixedBytes::from(random_bytes)     // Convert to FixedBytes<32>
+    let mut random_bytes = [0u8; 32]; // A 32-byte array initialized to zeros
+    rng.fill(&mut random_bytes); // Fill the array with random bytes
+    FixedBytes::from(random_bytes) // Convert to FixedBytes<32>
 }
 
 fn get_etherscan_uri(chain_id: u32, tx_hash: &str) -> String {
@@ -54,8 +54,11 @@ async fn main() -> Result<()> {
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
     let mut config: OperatorProperties = serde_yaml::from_str(&yaml_content)?;
-    let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
-    let bls_private_keystore_path = config.operator_bls_keystore_path.clone().expect("BLS keystore path not found");
+    let ecdsa_private_keystore_path = "/opacity-avs-node/config/opacity.ecdsa.key.json";
+    let bls_private_keystore_path = config
+        .operator_bls_keystore_path
+        .clone()
+        .expect("BLS keystore path not found");
     println!("Starting with config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
@@ -64,7 +67,8 @@ async fn main() -> Result<()> {
         return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
     }
 
-    let ecdsa_key_password: String = env::var("OPERATOR_ECDSA_KEY_PASSWORD").map_err(|_| eyre::eyre!("ECDSA key password env var not set"))?;
+    let ecdsa_key_password: String = env::var("OPERATOR_ECDSA_KEY_PASSWORD")
+        .map_err(|_| eyre::eyre!("ECDSA key password env var not set"))?;
     let ecdsa_keypath = Path::new(&ecdsa_private_keystore_path);
     let private_key = decrypt_key(ecdsa_keypath, ecdsa_key_password)?;
     let wallet = PrivateKeySigner::from_slice(&private_key)?;
@@ -84,8 +88,9 @@ async fn main() -> Result<()> {
     } else {
         Address::from_str("cAe751b75833ef09627549868A04E32679386e7C")?
     };
-    let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
-    
+    let opacity_registry_coordinator_address =
+        alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
+
     let el_chain_reader = ELChainReader::new(
         get_test_logger().clone(),
         slasher_address,
@@ -94,7 +99,9 @@ async fn main() -> Result<()> {
         rpc_url_chain_reader,
     );
     let operator_address = wallet.address();
-    let is_operator_registered = el_chain_reader.is_operator_registered(operator_address).await?;
+    let is_operator_registered = el_chain_reader
+        .is_operator_registered(operator_address)
+        .await?;
     if !is_operator_registered {
         return Err(eyre::eyre!("Operator not registered to EigenLayer"));
     }
@@ -104,9 +111,12 @@ async fn main() -> Result<()> {
         opacity_registry_coordinator_address,
         operator_state_retriever_address,
         rpc_url_registry_reader,
-    ).await?;
-    
-    let is_operator_registered_in_avs = avs_registry_reader.is_operator_registered(operator_address).await?;
+    )
+    .await?;
+
+    let is_operator_registered_in_avs = avs_registry_reader
+        .is_operator_registered(operator_address)
+        .await?;
     if is_operator_registered_in_avs {
         return Err(eyre::eyre!("Operator not registered in AVS"));
     }
@@ -119,12 +129,13 @@ async fn main() -> Result<()> {
     )
     .await
     .expect("avs writer build fail ");
-    
-    let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD").map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
-    let decrypted_key_vector = eth_bn254_keystore::decrypt_key(bls_private_keystore_path, bls_key_password)?;
+
+    let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD")
+        .map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
+    let decrypted_key_vector =
+        eth_bn254_keystore::decrypt_key(bls_private_keystore_path, bls_key_password)?;
     let fr = BigUint::from_bytes_be(&decrypted_key_vector).to_string();
     let bls_key_pair = BlsKeyPair::new(fr)?;
-
 
     let salt: FixedBytes<32> = generate_random_bytes();
     // Get the current SystemTime
@@ -141,16 +152,14 @@ async fn main() -> Result<()> {
         println!("System time seems to be before the UNIX epoch.");
     }
 
-
-
     let digest_hash: FixedBytes<32> = el_chain_reader
-    .calculate_operator_avs_registration_digest_hash(
-        operator_address,
-        opacity_registry_coordinator_address,
-        salt,
-        sig_expiry,
-    )
-    .await?;
+        .calculate_operator_avs_registration_digest_hash(
+            operator_address,
+            opacity_registry_coordinator_address,
+            salt,
+            sig_expiry,
+        )
+        .await?;
     // print!("digest_hash: {:?}", digest_hash);
     let quorum_nums = Bytes::from([0x00]);
 
@@ -164,9 +173,12 @@ async fn main() -> Result<()> {
             config.node_public_ip.clone(), // socket
         )
         .await?;
-    
+
     println!("Register operator to AVS TX broadcasted!");
-    println!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
+    println!(
+        "Transaction etherscan URI: {}",
+        get_etherscan_uri(config.chain_id, &tx_hash.to_string())
+    );
 
     let mut receipt_received = false;
     let mut attempts = 0;
@@ -180,24 +192,38 @@ async fn main() -> Result<()> {
             Ok(Some(receipt)) => {
                 receipt_received = true;
                 if receipt.status() {
-                    println!("Transaction succeeded! Block number: {:?}", receipt.block_number);
+                    println!(
+                        "Transaction succeeded! Block number: {:?}",
+                        receipt.block_number
+                    );
                 } else {
-                    println!("Transaction failed!, transaction receipt details: {:?}", receipt);
+                    println!(
+                        "Transaction failed!, transaction receipt details: {:?}",
+                        receipt
+                    );
                 }
             }
             Ok(None) => {
-                println!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
+                println!(
+                    "Waiting for transaction receipt... (Attempt {}/{})",
+                    attempts, MAX_ATTEMPTS
+                );
             }
             Err(e) => {
                 println!("Error fetching transaction receipt: {:?}", e);
                 if attempts == MAX_ATTEMPTS {
-                    return Err(eyre::eyre!("Failed to get transaction receipt after {} attempts", MAX_ATTEMPTS));
+                    return Err(eyre::eyre!(
+                        "Failed to get transaction receipt after {} attempts",
+                        MAX_ATTEMPTS
+                    ));
                 }
             }
         }
     }
 
-    let operator_id = avs_registry_reader.get_operator_id(operator_address).await?;
+    let operator_id = avs_registry_reader
+        .get_operator_id(operator_address)
+        .await?;
     println!("Operator ID: {:?}", operator_id);
     config.operator_id = operator_id.to_string();
     let yaml_content = serde_yaml::to_string(&config)?;
@@ -205,7 +231,10 @@ async fn main() -> Result<()> {
     println!("Operator ID added to config file");
 
     if !receipt_received {
-        return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));
+        return Err(eyre::eyre!(
+            "Transaction receipt not received after {} attempts",
+            MAX_ATTEMPTS
+        ));
     }
 
     Ok(())

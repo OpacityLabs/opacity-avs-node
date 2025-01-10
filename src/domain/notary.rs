@@ -1,10 +1,9 @@
-use std::{collections::HashMap, sync::Arc};
-
-use chrono::{DateTime, Utc};
-use p256::ecdsa::SigningKey;
 use serde::{Deserialize, Serialize};
-use std::sync::Mutex;
-use tokio::sync::Mutex as AsyncMutex;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
+use tlsn_core::CryptoProvider;
 
 use crate::{config::NotarizationProperties, domain::auth::AuthorizationWhitelistRecord};
 
@@ -40,37 +39,30 @@ pub struct NotarizationRequestQuery {
 pub enum ClientType {
     /// Client that has access to the transport layer
     Tcp,
-    /// Client that cannot directly access transport layer, e.g. browser extension
+    /// Client that cannot directly access transport layer, e.g. browser
+    /// extension
     Websocket,
-}
-
-/// Session configuration data to be stored in temporary storage
-#[derive(Clone, Debug)]
-pub struct SessionData {
-    pub max_sent_data: Option<usize>,
-    pub max_recv_data: Option<usize>,
-    pub created_at: DateTime<Utc>,
 }
 
 /// Global data that needs to be shared with the axum handlers
 #[derive(Clone, Debug)]
 pub struct NotaryGlobals {
-    pub notary_signing_key: SigningKey,
+    pub crypto_provider: Arc<CryptoProvider>,
     pub notarization_config: NotarizationProperties,
-    /// A temporary storage to store configuration data, mainly used for WebSocket client
-    pub store: Arc<AsyncMutex<HashMap<String, SessionData>>>,
+    /// A temporary storage to store session_id
+    pub store: Arc<Mutex<HashMap<String, ()>>>,
     /// Whitelist of API keys for authorization purpose
     pub authorization_whitelist: Option<Arc<Mutex<HashMap<String, AuthorizationWhitelistRecord>>>>,
 }
 
 impl NotaryGlobals {
     pub fn new(
-        notary_signing_key: SigningKey,
+        crypto_provider: Arc<CryptoProvider>,
         notarization_config: NotarizationProperties,
         authorization_whitelist: Option<Arc<Mutex<HashMap<String, AuthorizationWhitelistRecord>>>>,
     ) -> Self {
         Self {
-            notary_signing_key,
+            crypto_provider,
             notarization_config,
             store: Default::default(),
             authorization_whitelist,
