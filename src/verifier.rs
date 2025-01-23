@@ -164,7 +164,6 @@ async fn verify_proof(
 
     // check that resource:value from request can be found in recv.data
     let recv_data = String::from_utf8_lossy(recv.data());
-    let resource_value = format!("{}:{}", request.resource, request.value);
     
     // Split the response into headers and body
     let parts: Vec<&str> = recv_data.split("\r\n\r\n").collect();
@@ -186,18 +185,19 @@ async fn verify_proof(
 
     // Parse the JSON
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(&cleaned_body) {
-        // Check if model exists in the result object
+        // Check if resource exists in the result object
         if let Some(result) = json.get("result") {
-            if let Some(model) = result.get("model") {
-                if let Some(model_str) = model.as_str() {
-                    // Check if the model string starts with the value we're looking for
-                    // This handles cases where the model might have additional version info
-                    if model_str.starts_with(&request.value) {
+            if let Some(resource_value) = result.get(&request.resource) {
+                if let Some(value_str) = resource_value.as_str() {
+                    // Check if the value string starts with the value we're looking for
+                    // This handles cases where the value might have additional version info
+                    if value_str.starts_with(&request.value) {
                         // Found a match, continue with the rest of the code
+                        debug!("Resource value '{}:{}' found in response", request.resource, request.value);
                     } else {
                         return Err((
                             axum::http::StatusCode::BAD_REQUEST,
-                            format!("Model value '{}' not found in response", request.value)
+                            format!("Resource value '{}:{}' not found in response", request.resource, request.value)
                         ));
                     }
                 }
