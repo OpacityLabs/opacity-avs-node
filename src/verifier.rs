@@ -101,6 +101,7 @@ async fn verify_proof(
         value: request.value.clone(),
         threshold: request.threshold,  // No need to clone as u64 implements Copy
     };
+    debug!("Commitment: {:?}", commitment);
 
     let message = format!("{}{}{}{}", commitment.platform, commitment.resource, commitment.value, commitment.threshold);
 
@@ -148,11 +149,6 @@ async fn verify_proof(
             format!("Commitment timestamp is too old (more than {} seconds)", max_time_diff)
         ));
     }
-    let signature = sign(commitment_hash).await.unwrap();
-    let operator_id = operator_config.operator_id;
-    let operator_address = operator_config.operator_address;
-    debug!("Operator ID: {:?}", operator_id);
-    debug!("Operator Address: {:?}", operator_address);
 
     // check that server == platform
     if session_info.server_name != tlsn_core::ServerName::Dns(request.platform.clone()) {
@@ -164,10 +160,12 @@ async fn verify_proof(
 
     // check that resource:value from request can be found in recv.data
     let recv_data = String::from_utf8_lossy(recv.data());
+    debug!("Received data: {}", recv_data);
     
     // Split the response into headers and body
     let parts: Vec<&str> = recv_data.split("\r\n\r\n").collect();
     if parts.len() < 2 {
+        debug!("Invalid parts length: {}", parts.len());
         return Err((
             axum::http::StatusCode::BAD_REQUEST,
             "Invalid HTTP response format".to_string()
@@ -176,39 +174,69 @@ async fn verify_proof(
 
     // Parse the chunked body
     let body = parts[1..].join("\r\n\r\n");
+    // debug!("Parsed body: {}", body);
+    
     // Remove chunk size indicators and trailing zeros
     let cleaned_body: String = body
         .lines()
         .filter(|line| !line.chars().all(|c| c.is_digit(16)) && !line.is_empty())
         .collect::<Vec<&str>>()
         .join("\n");
+    // debug!("Cleaned body: {}", cleaned_body);
 
     // Parse the JSON
-    if let Ok(json) = serde_json::from_str::<serde_json::Value>(&cleaned_body) {
-        // Check if resource exists in the result object
-        if let Some(result) = json.get("result") {
-            if let Some(resource_value) = result.get(&request.resource) {
-                if let Some(value_str) = resource_value.as_str() {
-                    // Check if the value string starts with the value we're looking for
-                    // This handles cases where the value might have additional version info
-                    if value_str.starts_with(&request.value) {
-                        // Found a match, continue with the rest of the code
-                        debug!("Resource value '{}:{}' found in response", request.resource, request.value);
+    match serde_json::from_str::<serde_json::Value>(&cleaned_body) {
+        Ok(json) => {
+            // debug!("Parsed JSON: {:?}", json);
+            // Check if resource exists in the result object
+            if let Some(result) = json.get("result") {
+                // debug!("Found result object: {:?}", result);
+                if let Some(resource_value) = result.get(&request.resource) {
+                    debug!("Found resource '{}': {:?}", request.resource, resource_value);
+                    if let Some(value_str) = resource_value.as_str() {
+                        debug!("Comparing value '{}' with request value '{}'", value_str, request.value);
+                        if !value_str.starts_with(&request.value) {
+                            return Err((
+                                axum::http::StatusCode::BAD_REQUEST,
+                                format!("Resource value '{}' does not match expected '{}'", value_str, request.value)
+                            ));
+                        }
                     } else {
                         return Err((
                             axum::http::StatusCode::BAD_REQUEST,
-                            format!("Resource value '{}:{}' not found in response", request.resource, request.value)
+                            format!("Resource value is not a string")
                         ));
                     }
+                } else {
+                    return Err((
+                        axum::http::StatusCode::BAD_REQUEST,
+                        format!("Resource '{}' not found in response", request.resource)
+                    ));
                 }
+            } else {
+                return Err((
+                    axum::http::StatusCode::BAD_REQUEST,
+                    "No 'result' object found in response".to_string()
+                ));
             }
         }
-    } else {
-        return Err((
-            axum::http::StatusCode::BAD_REQUEST,
-            "Failed to parse JSON response".to_string()
-        ));
+        Err(e) => {
+            debug!("Failed to parse JSON: {}", e);
+            return Err((
+                axum::http::StatusCode::BAD_REQUEST,
+                format!("Failed to parse JSON response: {}", e)
+            ));
+        }
     }
+
+    debug!("Resource verification passed successfully");
+
+    let signature = sign(commitment_hash).await.unwrap();
+    let operator_id = operator_config.operator_id;
+    let operator_address = operator_config.operator_address;
+    debug!("Operator ID: {:?}", operator_id);
+    debug!("Operator Address: {:?}", operator_address);
+    debug!("Signature: {:?}", signature);
 
     let response = serde_json::json!({
         "task_index": request.task_index,
