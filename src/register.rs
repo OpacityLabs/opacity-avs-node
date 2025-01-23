@@ -17,6 +17,7 @@ use rand::Rng;
 use eth_bn254_keystore;
 use num_bigint::BigUint;
 use opacity_avs_node::OperatorProperties;
+use tracing::{debug, info, error};
 
 fn generate_random_bytes() -> FixedBytes<32> {
     let mut rng = rand::thread_rng();
@@ -56,7 +57,7 @@ async fn main() -> Result<()> {
     let mut config: OperatorProperties = serde_yaml::from_str(&yaml_content)?;
     let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
     let bls_private_keystore_path = config.operator_bls_keystore_path.clone().expect("BLS keystore path not found");
-    println!("Starting with config: {:?}", config);
+    info!("Starting with config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
     let chain_id = provider.get_chain_id().await? as u32;
@@ -138,7 +139,7 @@ async fn main() -> Result<()> {
         // Convert seconds to U256
         sig_expiry = U256::from(seconds) + *SIGNATURE_EXPIRY;
     } else {
-        println!("System time seems to be before the UNIX epoch.");
+        error!("System time seems to be before the UNIX epoch.");
     }
 
 
@@ -165,8 +166,8 @@ async fn main() -> Result<()> {
         )
         .await?;
     
-    println!("Register operator to AVS TX broadcasted!");
-    println!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
+    info!("Register operator to AVS TX broadcasted!");
+    info!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
 
     let mut receipt_received = false;
     let mut attempts = 0;
@@ -180,16 +181,16 @@ async fn main() -> Result<()> {
             Ok(Some(receipt)) => {
                 receipt_received = true;
                 if receipt.status() {
-                    println!("Transaction succeeded! Block number: {:?}", receipt.block_number);
+                    info!("Transaction succeeded! Block number: {:?}", receipt.block_number);
                 } else {
-                    println!("Transaction failed!, transaction receipt details: {:?}", receipt);
+                    error!("Transaction failed!, transaction receipt details: {:?}", receipt);
                 }
             }
             Ok(None) => {
-                println!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
+                debug!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
             }
             Err(e) => {
-                println!("Error fetching transaction receipt: {:?}", e);
+                error!("Error fetching transaction receipt: {:?}", e);
                 if attempts == MAX_ATTEMPTS {
                     return Err(eyre::eyre!("Failed to get transaction receipt after {} attempts", MAX_ATTEMPTS));
                 }
@@ -198,11 +199,11 @@ async fn main() -> Result<()> {
     }
 
     let operator_id = avs_registry_reader.get_operator_id(operator_address).await?;
-    println!("Operator ID: {:?}", operator_id);
+    debug!("Operator ID: {:?}", operator_id);
     config.operator_id = operator_id.to_string();
     let yaml_content = serde_yaml::to_string(&config)?;
     fs::write(config_path, yaml_content)?;
-    println!("Operator ID added to config file");
+    info!("Operator ID added to config file");
 
     if !receipt_received {
         return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));
