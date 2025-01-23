@@ -69,7 +69,7 @@ async fn verify_proof(
             axum::http::StatusCode::INTERNAL_SERVER_ERROR,
             format!("Failed to parse notary public key: {err}")
         ))?;
-
+    
     let TlsProof { session, substrings } = request.tls_proof;
 
     // Verify the session proof
@@ -94,12 +94,12 @@ async fn verify_proof(
 
     // Create commitment from request fields
     let commitment = Commitment {
-        signature: request.signature,
-        address: request.address,
-        platform: request.platform,
-        resource: request.resource,
-        value: request.value,
-        threshold: request.threshold,  // Convert u64 to i32
+        signature: request.signature.clone(),
+        address: request.address.clone(),
+        platform: request.platform.clone(),
+        resource: request.resource.clone(),
+        value: request.value.clone(),
+        threshold: request.threshold,  // No need to clone as u64 implements Copy
     };
 
     let message = format!("{}{}{}{}", commitment.platform, commitment.resource, commitment.value, commitment.threshold);
@@ -154,12 +154,68 @@ async fn verify_proof(
     debug!("Operator ID: {:?}", operator_id);
     debug!("Operator Address: {:?}", operator_address);
 
+    // check that server == platform
+    if session_info.server_name != tlsn_core::ServerName::Dns(request.platform.clone()) {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Server name does not match platform".to_string()
+        ));
+    }
+
+    // check that resource:value from request can be found in recv.data
+    let recv_data = String::from_utf8_lossy(recv.data());
+    let resource_value = format!("{}:{}", request.resource, request.value);
+    
+    // Split the response into headers and body
+    let parts: Vec<&str> = recv_data.split("\r\n\r\n").collect();
+    if parts.len() < 2 {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Invalid HTTP response format".to_string()
+        ));
+    }
+
+    // Parse the chunked body
+    let body = parts[1..].join("\r\n\r\n");
+    // Remove chunk size indicators and trailing zeros
+    let cleaned_body: String = body
+        .lines()
+        .filter(|line| !line.chars().all(|c| c.is_digit(16)) && !line.is_empty())
+        .collect::<Vec<&str>>()
+        .join("\n");
+
+    // Parse the JSON
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(&cleaned_body) {
+        // Check if model exists in the result object
+        if let Some(result) = json.get("result") {
+            if let Some(model) = result.get("model") {
+                if let Some(model_str) = model.as_str() {
+                    // Check if the model string starts with the value we're looking for
+                    // This handles cases where the model might have additional version info
+                    if model_str.starts_with(&request.value) {
+                        // Found a match, continue with the rest of the code
+                    } else {
+                        return Err((
+                            axum::http::StatusCode::BAD_REQUEST,
+                            format!("Model value '{}' not found in response", request.value)
+                        ));
+                    }
+                }
+            }
+        }
+    } else {
+        return Err((
+            axum::http::StatusCode::BAD_REQUEST,
+            "Failed to parse JSON response".to_string()
+        ));
+    }
+
     let response = serde_json::json!({
         "task_index": request.task_index,
         "server_name": session_info.server_name,
         "time": current_timestamp.to_string(),
         "sent": String::from_utf8_lossy(sent.data()),
-        "received": String::from_utf8_lossy(recv.data()),
+        "received": recv_data,
         "signature": signature.to_string(),
         "operator_id": operator_id,
         "operator_address": operator_address,
