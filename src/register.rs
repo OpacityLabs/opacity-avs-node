@@ -16,6 +16,7 @@ use hex;
 use rand::Rng;        
 use eth_bn254_keystore;
 use num_bigint::BigUint;
+use opacity_avs_node::OperatorProperties;
 
 fn generate_random_bytes() -> FixedBytes<32> {
     let mut rng = rand::thread_rng();
@@ -24,26 +25,13 @@ fn generate_random_bytes() -> FixedBytes<32> {
     FixedBytes::from(random_bytes)     // Convert to FixedBytes<32>
 }
 
-fn get_etherscan_uri(chain_id: u64, tx_hash: &str) -> String {
+fn get_etherscan_uri(chain_id: u32, tx_hash: &str) -> String {
     let etherscan_url = if chain_id == 1 {
         "https://etherscan.io/tx/"
     } else {
         "https://holesky.etherscan.io/tx/"
     };
     format!("{}{}", etherscan_url, tx_hash)
-}
-
-#[derive(Debug, Deserialize)]
-struct Config {
-    production: bool,
-    registry_coordinator_address: String,
-    opacity_avs_address: String,
-    avs_directory_address: String,
-    eigenlayer_delegation_manager: String,
-    chain_id: u64,
-    operator_address: String,
-    eth_rpc_url: String,
-    node_public_ip: String,
 }
 
 use eyre::Result;
@@ -65,13 +53,13 @@ async fn main() -> Result<()> {
 
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
-    let config: Config = serde_yaml::from_str(&yaml_content)?;
+    let mut config: OperatorProperties = serde_yaml::from_str(&yaml_content)?;
     let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
-    let bls_private_keystore_path = "/opacity-avs-node/config/opacity.bls.key.json";
+    let bls_private_keystore_path = config.operator_bls_keystore_path.clone().expect("BLS keystore path not found");
     println!("Starting with config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
-    let chain_id = provider.get_chain_id().await?;
+    let chain_id = provider.get_chain_id().await? as u32;
     if chain_id != config.chain_id {
         return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
     }
@@ -173,7 +161,7 @@ async fn main() -> Result<()> {
             digest_hash,
             sig_expiry,
             quorum_nums,
-            config.node_public_ip, // socket
+            config.node_public_ip.clone(), // socket
         )
         .await?;
     
@@ -208,6 +196,13 @@ async fn main() -> Result<()> {
             }
         }
     }
+
+    let operator_id = avs_registry_reader.get_operator_id(operator_address).await?;
+    println!("Operator ID: {:?}", operator_id);
+    config.operator_id = operator_id.to_string();
+    let yaml_content = serde_yaml::to_string(&config)?;
+    fs::write(config_path, yaml_content)?;
+    println!("Operator ID added to config file");
 
     if !receipt_received {
         return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));

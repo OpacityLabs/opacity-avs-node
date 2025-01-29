@@ -45,6 +45,7 @@ pub struct VerificationRequest {
     pub node_url: String,
     pub timestamp: i32,
     pub node_selector_signature: String,
+    pub task_index: u64,
 }
 
 #[derive(Clone)]
@@ -90,16 +91,6 @@ async fn verify_proof(
 
     sent.set_redacted(b'X');
     recv.set_redacted(b'X');
-
-    let response = format!(
-        "Verified session with {:?} at {}.\nSent: {}\nReceived: {}",
-        session_info.server_name,
-        time,
-        String::from_utf8_lossy(sent.data()),
-        String::from_utf8_lossy(recv.data())
-    );
-
-
 
     // Create commitment from request fields
     let commitment = Commitment {
@@ -157,7 +148,24 @@ async fn verify_proof(
             format!("Commitment timestamp is too old (more than {} seconds)", max_time_diff)
         ));
     }
-    let signature = sign(commitment_hash).await.unwrap();    
+    let signature = sign(commitment_hash).await.unwrap();
+    let operator_id = operator_config.operator_id;
+    let operator_address = operator_config.operator_address;
+    debug!("Operator ID: {:?}", operator_id);
+    debug!("Operator Address: {:?}", operator_address);
+
+    let response = serde_json::json!({
+        "task_index": request.task_index,
+        "server_name": session_info.server_name,
+        "time": current_timestamp.to_string(),
+        "sent": String::from_utf8_lossy(sent.data()),
+        "received": String::from_utf8_lossy(recv.data()),
+        "signature": signature.to_string(),
+        "operator_id": operator_id,
+        "operator_address": operator_address,
+        "commitment_hash": hex::encode(commitment_hash)
+    }).to_string();
+
     Ok(Json(response))
 }
 
@@ -182,16 +190,6 @@ pub async fn run_verifier(config: &NotaryServerProperties) -> eyre::Result<()> {
 
 pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
     
-    let operator_config: OperatorProperties =
-        parse_operator_config_file("config/opacity.config.yaml")?; //i sthere a better way than hard coding this?
-    validate_operator_config(&operator_config).unwrap_or_else(|err| {
-        panic!("Invalid operator config: {}", err);
-    });
-
-    let bls_keystore_path = operator_config.operator_bls_keystore_path.clone().unwrap_or_else(|| {
-        panic!("operator_bls_keystore_path not set in operator config file");
-    });
-    
     let bls_password = std::env::var("OPERATOR_BLS_KEY_PASSWORD").unwrap_or_else(|_| {
         panic!("OPERATOR_BLS_KEY_PASSWORD not set in environment variable");
     });
@@ -202,17 +200,6 @@ pub async fn sign(message: [u8; 32]) -> Result<BN254Signature> {
         .map_err(|e| eyre::eyre!("Failed to read BLS identifier file: {}", e))?;
     let signature: BN254Signature = get_signature(&bls_identifier, message, &bls_password, signer_endpoint).await?;
 
-
-    let operator_bls_key: BN254SigningKey =
-        load_operator_bls_key(&bls_keystore_path, &bls_password).unwrap_or_else(|err| {
-            panic!("Unable to decrypt operator BLS keystore: {:?}", err);
-        });
-    
-    let bn254_public_key_g1 = (G1Affine::generator() * operator_bls_key).into_affine();
-
-    debug!("Signing result with BN254 key {:?}", bn254_public_key_g1);
-    let signature_classic: BN254Signature = bn254::sign(operator_bls_key, &message)?;
-    debug!("Signature classic: {:?}", signature_classic);
     debug!("Signature: {:?}", signature);
-    Ok(signature_classic)
+    Ok(signature)
 }
