@@ -86,6 +86,6 @@ RUN chmod +x /opacity-avs-node/start-node.sh /opacity-avs-node/register.sh /opac
 # Labels and configuration
 LABEL org.opencontainers.image.source=https://github.com/OpacityLabs/opacity-avs-node
 LABEL org.opencontainers.image.description="An implementation of the opacity avs node in Rust."
-EXPOSE 7047
+EXPOSE 7047 6047
 
 CMD ["/opacity-avs-node/start-node.sh"]
