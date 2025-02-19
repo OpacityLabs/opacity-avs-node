@@ -29,8 +29,7 @@ RUN ls -al bin/
 RUN pwd
 RUN ls -al
 RUN ls -al /bin
-RUN go build -o /bin/avs-cli /app/cli/main.go
-RUN go build -o ./bin/avs-cli cli/main.go
+RUN go build -o ./bin/avs-cli ./cli/main.go
 RUN rm go1.21.0.linux-amd64.tar.gz
 
 # This should be associated with an acive IAS SPID in order for
