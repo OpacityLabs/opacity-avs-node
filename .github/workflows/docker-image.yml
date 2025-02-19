@@ -25,5 +25,5 @@ jobs:
       - name: Build and Push Image
         run: |
           echo "Building and pushing Docker image..."
-          docker build -t opacitylabs/opacity-avs-node:actions-latest -f Dockerfile.dockerignore .
+          docker build -t opacitylabs/opacity-avs-node:actions-latest -f Dockerfile .
           docker push opacitylabs/opacity-avs-node:actions-latest
