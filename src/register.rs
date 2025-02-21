@@ -116,7 +116,7 @@ async fn main() -> Result<()> {
             digest_hash,
             sig_expiry,
             quorum_nums,
-            "65.109.158.181:33078;31078".to_string(), // socket
+            config.node_public_ip.clone(), // socket
         )
         .await?;
 
