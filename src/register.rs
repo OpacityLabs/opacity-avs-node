@@ -1,14 +1,14 @@
 //! register operator in quorum with avs registry coordinator
-use alloy_primitives::U256;
-use alloy_primitives::{Bytes, FixedBytes,Address};
+use alloy::providers::WalletProvider;
+use alloy_primitives::{U256};
+use alloy::primitives::{Bytes, FixedBytes};
+
+use alloy::primitives::Address;
 use alloy_provider::Provider;
 use alloy_signer_local::PrivateKeySigner;
-use eigen_client_avsregistry::writer::AvsRegistryChainWriter;
-use eigen_client_avsregistry::reader::AvsRegistryChainReader;
-use eigen_client_elcontracts::reader::ELChainReader;
-use eigen_crypto_bls::BlsKeyPair;
-use eigen_logging::get_test_logger;
-use eigen_utils::get_provider;
+use eigensdk::crypto_bls::BlsKeyPair;
+use eigensdk::logging::get_test_logger;
+use eigen_common::{get_provider, get_signer};
 use serde::Deserialize;
 use std::{fs,env,path::Path};
 use eth_keystore::decrypt_key;
@@ -18,6 +18,18 @@ use eth_bn254_keystore;
 use num_bigint::BigUint;
 use opacity_avs_node::OperatorProperties;
 use tracing::{debug, info, error};
+use eigen_utils::middleware::registrycoordinator::RegistryCoordinator;
+use eigen_utils::middleware::stakeregistry::StakeRegistry;
+use eigen_utils::sdk::mockavsservicemanager::MockAvsServiceManager;
+use eigensdk::client_avsregistry::writer::AvsRegistryChainWriter;
+use eigensdk::client_elcontracts::reader::ELChainReader;
+use eigensdk::client_elcontracts::writer::ELChainWriter;
+use eigen_utils::core::delegationmanager::DelegationManager;
+use eigensdk::testing_utils::m2_holesky_constants::{
+    AVS_DIRECTORY_ADDRESS, DELEGATION_MANAGER_ADDRESS,
+     REWARDS_COORDINATOR, STRATEGY_MANAGER_ADDRESS,
+};
+use eigen_types::operator::Operator;
 
 fn generate_random_bytes() -> FixedBytes<32> {
     let mut rng = rand::thread_rng();
@@ -36,14 +48,9 @@ fn get_etherscan_uri(chain_id: u32, tx_hash: &str) -> String {
 }
 
 use eyre::Result;
-use lazy_static::lazy_static;
 use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-lazy_static! {
-    /// 1 day
-    static ref SIGNATURE_EXPIRY: U256 = U256::from(86400);
-}
 #[tokio::main]
 #[allow(clippy::expect_used)]
 async fn main() -> Result<()> {
@@ -51,19 +58,20 @@ async fn main() -> Result<()> {
     if args.len() != 2 {
         return Err(eyre::eyre!("Invalid number of arguments"));
     }
-
+    let test_logger = get_test_logger();
     let config_path = &args[1];
     let yaml_content = fs::read_to_string(config_path)?;
     let mut config: OperatorProperties = serde_yaml::from_str(&yaml_content)?;
-    let ecdsa_private_keystore_path  =  "/opacity-avs-node/config/opacity.ecdsa.key.json";
+    let ecdsa_private_keystore_path  =  "ecdsa.json";
     let bls_private_keystore_path = config.operator_bls_keystore_path.clone().expect("BLS keystore path not found");
     info!("Starting with config: {:?}", config);
 
     let provider = get_provider(&config.eth_rpc_url);
-    let chain_id = provider.get_chain_id().await? as u32;
-    if chain_id != config.chain_id {
-        return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
-    }
+    // let chain_id = provider.get_chain_id().await? as u32;
+    let chain_id = config.chain_id;
+    // if chain_id != config.chain_id {
+    //     return Err(eyre::eyre!("Chain id mismatch, please check the rpc url"));
+    // }
 
     let ecdsa_key_password: String = env::var("OPERATOR_ECDSA_KEY_PASSWORD").map_err(|_| eyre::eyre!("ECDSA key password env var not set"))?;
     let ecdsa_keypath = Path::new(&ecdsa_private_keystore_path);
@@ -85,49 +93,60 @@ async fn main() -> Result<()> {
     } else {
         Address::from_str("cAe751b75833ef09627549868A04E32679386e7C")?
     };
-    let opacity_registry_coordinator_address = alloy_primitives::Address::from_str(&config.registry_coordinator_address).unwrap();
-    
-    let el_chain_reader = ELChainReader::new(
-        get_test_logger().clone(),
-        slasher_address,
-        delegation_manager_address,
-        avs_directory_address,
-        rpc_url_chain_reader,
-    );
-    let operator_address = wallet.address();
-    let is_operator_registered = el_chain_reader.is_operator_registered(operator_address).await?;
-    if !is_operator_registered {
-        return Err(eyre::eyre!("Operator not registered to EigenLayer"));
-    }
+    let opacity_registry_coordinator_address = Address::from_str(&config.registry_coordinator_address)?;
+    let signer = get_signer(&private_key_string, &config.eth_rpc_url);
     let test_logger = get_test_logger();
-    let avs_registry_reader = AvsRegistryChainReader::new(
-        test_logger.clone(),
-        opacity_registry_coordinator_address,
-        operator_state_retriever_address,
-        rpc_url_registry_reader,
-    ).await?;
-    
-    let is_operator_registered_in_avs = avs_registry_reader.is_operator_registered(operator_address).await?;
-    if is_operator_registered_in_avs {
-        return Err(eyre::eyre!("Operator not registered in AVS"));
-    }
+    let contract_registry_coordinator = RegistryCoordinator::new(opacity_registry_coordinator_address, get_provider(&config.eth_rpc_url));
+
     let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
         test_logger.clone(),
-        rpc_url_registry_writer,
-        private_key_string,
-        opacity_registry_coordinator_address,
-        operator_state_retriever_address,
+        config.eth_rpc_url.clone(),
+        private_key_string.clone(),
+        opacity_registry_coordinator_address.clone(),
+        Address::ZERO,
     )
     .await
     .expect("avs writer build fail ");
+    // let el_chain_reader = ELChainReader::new(
+    //     get_test_logger().clone(),
+    //     slasher_address,
+    //     delegation_manager_address,
+    //     avs_directory_address,
+    //     rpc_url_chain_reader,
+    // );
+    // let operator_address = wallet.address();
+    // let is_operator_registered = el_chain_reader.is_operator_registered(operator_address).await?;
+    // if !is_operator_registered {
+    //     return Err(eyre::eyre!("Operator not registered to EigenLayer"));
+    // }
+    // let test_logger = get_test_logger();
+    // let avs_registry_reader = AvsRegistryChainReader::new(
+    //     test_logger.clone(),
+    //     opacity_registry_coordinator_address,
+    //     operator_state_retriever_address,
+    //     rpc_url_registry_reader,
+    // ).await?;
+    
+    // let is_operator_registered_in_avs = avs_registry_reader.is_operator_registered(operator_address).await?;
+    // if is_operator_registered_in_avs {
+    //     return Err(eyre::eyre!("Operator not registered in AVS"));
+    // }
+    // let avs_registry_writer = AvsRegistryChainWriter::build_avs_registry_chain_writer(
+    //     test_logger.clone(),
+    //     rpc_url_registry_writer,
+    //     private_key_string,
+    //     opacity_registry_coordinator_address,
+    //     operator_state_retriever_address,
+    // )
+    // .await
+    // .expect("avs writer build fail ");
     
     let bls_key_password: String = env::var("OPERATOR_BLS_KEY_PASSWORD").map_err(|_| eyre::eyre!("BLS key password env var not set"))?;
     let decrypted_key_vector = eth_bn254_keystore::decrypt_key(bls_private_keystore_path, bls_key_password)?;
     let fr = BigUint::from_bytes_be(&decrypted_key_vector).to_string();
     let bls_key_pair = BlsKeyPair::new(fr)?;
-
-
-    let salt: FixedBytes<32> = generate_random_bytes();
+    let digest_hash: FixedBytes<32> = FixedBytes::from([0x02; 32]);
+    let signature_expiry: U256 = U256::from(86400);
     // Get the current SystemTime
     let now = SystemTime::now();
     let mut sig_expiry: U256 = U256::from(0);
@@ -137,77 +156,137 @@ async fn main() -> Result<()> {
         let seconds = duration_since_epoch.as_secs(); // Returns a u64
 
         // Convert seconds to U256
-        sig_expiry = U256::from(seconds) + *SIGNATURE_EXPIRY;
+        sig_expiry = U256::from(seconds) + signature_expiry;
     } else {
-        error!("System time seems to be before the UNIX epoch.");
+        println!("System time seems to be before the UNIX epoch.");
     }
-
-
-
-    let digest_hash: FixedBytes<32> = el_chain_reader
-    .calculate_operator_avs_registration_digest_hash(
-        operator_address,
-        opacity_registry_coordinator_address,
-        salt,
-        sig_expiry,
-    )
-    .await?;
-    // print!("digest_hash: {:?}", digest_hash);
     let quorum_nums = Bytes::from([0x00]);
+    let el_chain_reader = ELChainReader::new(
+        get_test_logger().clone(),
+        None,
+        DELEGATION_MANAGER_ADDRESS,
+        REWARDS_COORDINATOR,
+        AVS_DIRECTORY_ADDRESS,
+        None,
+        config.eth_rpc_url.clone(),
+    );
+
+    // A new ElChainWriter instance
+    let el_writer = ELChainWriter::new(
+        STRATEGY_MANAGER_ADDRESS,
+        REWARDS_COORDINATOR,
+        None,
+        None,
+        opacity_registry_coordinator_address,
+        el_chain_reader,
+        config.eth_rpc_url.clone(),
+        private_key_string.clone()
+    );
+
+    // let operator_details = Operator {
+    //     address: signer.default_signer_address(),
+    //     delegation_approver_address: Address::ZERO,
+    //     metadata_url: "opacity-eigensdk-rs".to_string(),
+    //     _deprecated_earnings_receiver_address: Some(signer.default_signer_address()),
+    //     staker_opt_out_window_blocks: Some(10),
+    //     allocation_delay: Some(100),
+    // };
+    // // Register the address as operator in delegation manager
+    // let _s = el_writer.register_as_operator(operator_details).await?;
+    // dbg!(_s);
 
     // Register the operator in registry coordinator
-    let tx_hash = avs_registry_writer
+    let tx = avs_registry_writer
         .register_operator_in_quorum_with_avs_registry_coordinator(
             bls_key_pair,
             digest_hash,
             sig_expiry,
             quorum_nums,
-            config.node_public_ip.clone(), // socket
+            "65.109.158.181:33078;31078".to_string(), // socket
         )
         .await?;
+    dbg!(tx);
+    // let salt: FixedBytes<32> = generate_random_bytes();
+    // // Get the current SystemTime
+    // let now = SystemTime::now();
+    // let mut sig_expiry: U256 = U256::from(0);
+    // // Convert SystemTime to a Duration since the UNIX epoch
+    // if let Ok(duration_since_epoch) = now.duration_since(UNIX_EPOCH) {
+    //     // Convert the duration to seconds
+    //     let seconds = duration_since_epoch.as_secs(); // Returns a u64
+
+    //     // Convert seconds to U256
+    //     sig_expiry = U256::from(seconds) + *SIGNATURE_EXPIRY;
+    // } else {
+    //     error!("System time seems to be before the UNIX epoch.");
+    // }
+
+
+
+    // let digest_hash: FixedBytes<32> = el_chain_reader
+    // .calculate_operator_avs_registration_digest_hash(
+    //     operator_address,
+    //     opacity_registry_coordinator_address,
+    //     salt,
+    //     sig_expiry,
+    // )
+    // .await?;
+    // // print!("digest_hash: {:?}", digest_hash);
+    // let quorum_nums = Bytes::from([0x00]);
+
+    // // Register the operator in registry coordinator
+    // let tx_hash = avs_registry_writer
+    //     .register_operator_in_quorum_with_avs_registry_coordinator(
+    //         bls_key_pair,
+    //         digest_hash,
+    //         sig_expiry,
+    //         quorum_nums,
+    //         config.node_public_ip.clone(), // socket
+    //     )
+    //     .await?;
     
-    info!("Register operator to AVS TX broadcasted!");
-    info!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
+    // info!("Register operator to AVS TX broadcasted!");
+    // info!("Transaction etherscan URI: {}", get_etherscan_uri(config.chain_id, &tx_hash.to_string()));
 
-    let mut receipt_received = false;
-    let mut attempts = 0;
-    const MAX_ATTEMPTS: u32 = 30; // Maximum number of attempts (1 minute with 2-second intervals)
+    // let mut receipt_received = false;
+    // let mut attempts = 0;
+    // const MAX_ATTEMPTS: u32 = 30; // Maximum number of attempts (1 minute with 2-second intervals)
 
-    while !receipt_received && attempts < MAX_ATTEMPTS {
-        tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
-        attempts += 1;
+    // while !receipt_received && attempts < MAX_ATTEMPTS {
+    //     tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+    //     attempts += 1;
 
-        match provider.get_transaction_receipt(tx_hash.clone()).await {
-            Ok(Some(receipt)) => {
-                receipt_received = true;
-                if receipt.status() {
-                    info!("Transaction succeeded! Block number: {:?}", receipt.block_number);
-                } else {
-                    error!("Transaction failed!, transaction receipt details: {:?}", receipt);
-                }
-            }
-            Ok(None) => {
-                debug!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
-            }
-            Err(e) => {
-                error!("Error fetching transaction receipt: {:?}", e);
-                if attempts == MAX_ATTEMPTS {
-                    return Err(eyre::eyre!("Failed to get transaction receipt after {} attempts", MAX_ATTEMPTS));
-                }
-            }
-        }
-    }
+    //     match provider.get_transaction_receipt(tx_hash.clone()).await {
+    //         Ok(Some(receipt)) => {
+    //             receipt_received = true;
+    //             if receipt.status() {
+    //                 info!("Transaction succeeded! Block number: {:?}", receipt.block_number);
+    //             } else {
+    //                 error!("Transaction failed!, transaction receipt details: {:?}", receipt);
+    //             }
+    //         }
+    //         Ok(None) => {
+    //             debug!("Waiting for transaction receipt... (Attempt {}/{})", attempts, MAX_ATTEMPTS);
+    //         }
+    //         Err(e) => {
+    //             error!("Error fetching transaction receipt: {:?}", e);
+    //             if attempts == MAX_ATTEMPTS {
+    //                 return Err(eyre::eyre!("Failed to get transaction receipt after {} attempts", MAX_ATTEMPTS));
+    //             }
+    //         }
+    //     }
+    // }
 
-    let operator_id = avs_registry_reader.get_operator_id(operator_address).await?;
-    debug!("Operator ID: {:?}", operator_id);
-    config.operator_id = operator_id.to_string();
-    let yaml_content = serde_yaml::to_string(&config)?;
-    fs::write(config_path, yaml_content)?;
-    info!("Operator ID added to config file");
+    // let operator_id = avs_registry_reader.get_operator_id(operator_address).await?;
+    // debug!("Operator ID: {:?}", operator_id);
+    // config.operator_id = operator_id.to_string();
+    // let yaml_content = serde_yaml::to_string(&config)?;
+    // fs::write(config_path, yaml_content)?;
+    // info!("Operator ID added to config file");
 
-    if !receipt_received {
-        return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));
-    }
+    // if !receipt_received {
+    //     return Err(eyre::eyre!("Transaction receipt not received after {} attempts", MAX_ATTEMPTS));
+    // }
 
     Ok(())
 }
