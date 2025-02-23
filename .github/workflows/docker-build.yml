@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - "dev"
+      - "k8s"
   workflow_dispatch:
 
 jobs:
