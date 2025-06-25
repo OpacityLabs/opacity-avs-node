@@ -1,10 +1,12 @@
 use clap::Parser;
 use ethers::types::{Signature, H160};
 use ethers::utils::hash_message;
+use ethers::abi::{encode, Token};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, Map, json};
 use std::str::FromStr;
 use eyre::Error;
+use hex;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -53,27 +55,21 @@ impl Commitment {
     }
 
     pub fn hash(&self) -> [u8; 32] {
-        // Create a dictionary of the commitment data
-        let commitment_dict = self.to_dict();
+        // ABI encode the parameters before hashing
+        let tokens = vec![
+            Token::Address(H160::from_str(&self.address).unwrap()),
+            Token::String(self.platform.clone()),
+            Token::String(self.resource.clone()),
+            Token::String(self.value.clone()),
+            Token::Uint(ethers::types::U256::from(self.threshold)),
+            Token::String(self.signature.clone()),
+        ];
         
-        // Format JSON string exactly like Python's json.dumps(sort_keys=True)
-        let mut json_str = String::new();
-        json_str.push('{');
-        
-        let mut first = true;
-        for (key, value) in commitment_dict.iter() {
-            if !first {
-                json_str.push_str(", ");
-            }
-            first = false;
-            json_str.push_str(&format!("\"{}\": {}", key, value));
-        }
-        json_str.push('}');
-        
-        let commitment_bytes = json_str.as_bytes();
+        let encoded_data = encode(&tokens);
         
         // Calculate keccak256 hash
-        let hash = ethers::utils::keccak256(commitment_bytes);
+        let hash = ethers::utils::keccak256(encoded_data);
+        println!("Hash: {}", hex::encode(hash));
         hash
     }
 }
